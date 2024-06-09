@@ -10,7 +10,10 @@ repositories {
 
 dependencies {
     implementation libs.aws.s3
-    implementation libs.spring.core
+    implementation libs.aws.cloudfront
+    implementation libs.aws.iam
+    implementation libs.aws.iam.builder
+    implementation libs.aws.s3.transfer.manager
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter

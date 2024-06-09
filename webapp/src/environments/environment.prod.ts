@@ -16,6 +16,6 @@ export const environment: Config = {
     bff: false,
     cart: false,
   },
-  accessibleUrl: "https://d110th3gx9u38e.cloudfront.net/",
-  taskIdentification: 'Task 2.1. This should be loaded from CloudFront.'
+  accessibleUrl: "https://dzjk01dufwe4q.cloudfront.net/",
+  taskIdentification: 'Task 2.2-2.3. This should be accessible from CloudFront. The configurations were created programmatically via Java Sdk v2.'
 };
