@@ -4,12 +4,19 @@
 package by.jenka.rss;
 
 
+import by.jenka.rss.task2.Task2;
 import by.jenka.rss.verification.ClasspathResourceChecker;
 
 public class TaskRunner {
 
 
     public static void main(String[] args) {
+        System.out.println("-------------   Start app");
+        new Task2().run();
+        System.out.println("---------------  End app");
+    }
+
+    public static void mainCheckResources(String[] args) {
         System.out.println("-------------   Start app");
         new ClasspathResourceChecker().run();
         System.out.println("---------------  End app");

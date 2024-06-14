@@ -26,3 +26,7 @@ aws-secretsmanager = { group = "software.amazon.awssdk", name = "secretsmanagere
 aws-sso = { group = "software.amazon.awssdk", name = "sso", version.ref = "aws" }
 aws-ssooidc = { group = "software.amazon.awssdk", name = "ssooidc", version.ref = "aws" }
 aws-sdk-java = { group = "software.amazon.awssdk", name = "aws-sdk-java", version.ref = "aws" }
+aws-cloudfront = { group = "software.amazon.awssdk", name = "cloudfront", version.ref = "aws" }
+aws-iam-builder = { group = "software.amazon.awssdk", name = "iam-policy-builder", version.ref = "aws" }
+aws-iam = { group = "software.amazon.awssdk", name = "iam", version.ref = "aws" }
+aws-s3-transfer-manager = { group = "software.amazon.awssdk", name = "s3-transfer-manager", version.ref = "aws" }
