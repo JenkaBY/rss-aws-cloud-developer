@@ -1,0 +1,16 @@
+{
+  "app": "../gradlew clean :app:run",
+  "watch": {
+    "include": [
+      "**"
+    ],
+    "exclude": [
+      "cdk*.json",
+      "target",
+      "build.gradle",
+      "src/test"
+    ]
+  },
+  "context": {
+  }
+}
