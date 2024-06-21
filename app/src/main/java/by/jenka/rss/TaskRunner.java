@@ -1,16 +1,13 @@
 package by.jenka.rss;
 
 
-import by.jenka.rss.task2.Task2;
-import by.jenka.rss.task3.Task3;
+import by.jenka.rss.task3.AllTasks;
 
 public class TaskRunner {
 
-
     public static void main(String[] args) {
         System.out.println("-------------   Start app");
-        new Task2().run();
-        new Task3().run();
+        new AllTasks().run();
         System.out.println("---------------  End app");
     }
 
