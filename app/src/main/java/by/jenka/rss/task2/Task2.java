@@ -29,9 +29,9 @@ public class Task2 {
         // Update S3 bucket policies
         var bucketArn = buildS3Arn(BUCKET_NAME);
         var bucketPolicy = iamClient.buildPrivateAccessToS3FromCloudFrontPolicy(bucketArn, distribution.arn());
-        var bucketPolicyResponse =  s3Client.getBucketPolicy(BUCKET_NAME);
 
         s3Client.updatePolicy(BUCKET_NAME, bucketPolicy.toJson());
+        var bucketPolicyResponse =  s3Client.getBucketPolicy(BUCKET_NAME);
         var originDomain = buildOriginDomain(BUCKET_NAME, AwsConfig.DEFAULT_REGION.id());
 
         String oacId = cloudfrontClient.createOrGetOAC();

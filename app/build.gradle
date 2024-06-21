@@ -14,6 +14,9 @@ dependencies {
     implementation libs.aws.iam
     implementation libs.aws.iam.builder
     implementation libs.aws.s3.transfer.manager
+    implementation libs.aws.cdk.lib
+
+    implementation project(':lambda')
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter

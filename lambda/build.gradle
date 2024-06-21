@@ -1,0 +1,40 @@
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'by.jenka.rss'
+version = ''
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.aws.lambda.core
+    implementation libs.aws.lambda.events
+
+    implementation libs.jackson.jr
+
+//    runtimeOnly libs.aws.lambda.log
+//     Test
+    testImplementation libs.aws.lambda.test
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core:2.1.0'
+    testImplementation 'com.jayway.jsonpath:json-path:2.9.0'
+}
+
+test {
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveVersion = ''
+    archiveBaseName = 'lambda'
+}
+
+build.dependsOn shadowJar

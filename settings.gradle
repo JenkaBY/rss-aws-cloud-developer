@@ -3,6 +3,5 @@ plugins {
 }
 
 rootProject.name = 'rss-task2-3'
-include('app', 'webapp')
-
+include('app', 'webapp', 'lambda')
 
