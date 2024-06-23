@@ -11,4 +11,10 @@ public interface ProductRepository {
     Optional<Product> findProductById(UUID productId);
 
     List<Product> findAll();
+
+    Product upsert(Product input);
+
+    Product findByIdFromDb(UUID id);
+
+    List<Product> findAllFromDb();
 }

@@ -13,16 +13,15 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.amazonaws.services.lambda.runtime.logging.LogLevel;
 
 
-public class GetProductsHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class GetProductsFromDbHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
     private ProductRepository productRepository = new DefaultProductRepository(DBConfig.enhancedClient);
 
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-
         var logger = context.getLogger();
-        logger.log("Request: %s".formatted(request), LogLevel.INFO);
-
+        logger.log("Request %s".formatted(request));
         var bodyAndCode = getProductResponse();
 
         var response = new APIGatewayProxyResponseEvent();
@@ -35,16 +34,17 @@ public class GetProductsHandler implements RequestHandler<APIGatewayProxyRequest
         return response;
     }
 
+
     private <T> ResponseCodeAndBody<T> getProductResponse() {
 
         try {
-            return new ResponseCodeAndBody(200, productRepository.findAll());
+            return new ResponseCodeAndBody(200, productRepository.findAllFromDb());
         } catch (Throwable any) {
             return new ResponseCodeAndBody(500, new HttpError(any.getMessage()));
         }
     }
 
-//    only for testing purpose
+    //    only for testing purpose
     public void setProductRepository(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }

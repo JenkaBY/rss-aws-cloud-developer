@@ -6,6 +6,12 @@ plugins {
 group = 'by.jenka.rss'
 version = ''
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -14,8 +20,17 @@ repositories {
 dependencies {
     implementation libs.aws.lambda.core
     implementation libs.aws.lambda.events
+    implementation libs.aws.dynamodb
+    implementation libs.aws.dynamodb.enhanced
+    implementation libs.aws.dynamodb.local
 
     implementation libs.jackson.jr
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 
 //    runtimeOnly libs.aws.lambda.log
 //     Test
