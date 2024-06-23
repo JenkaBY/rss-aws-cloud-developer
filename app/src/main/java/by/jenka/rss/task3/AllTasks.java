@@ -20,13 +20,22 @@ public class AllTasks {
 //                Task 2
                 .createS3BucketToHostFrontEnd()
                 .createCloudFront()
-                .grandPermission()
+                .grantReadPermissionFromCloudFront()
                 .initFrontEndDeployment()
+//                Task 4
+                .createProductTable()
+                .createStockTable()
 //                Task 3
                 .createProductByIdLambda()
                 .createProductListLambda()
+//                  Task 4
+                .createProductListDynamoDbLambda()
+                .createProductByIdDynamoDbLambda()
+                .createPostProductDynamoDbLambda()
+//                Grant permission to DB for Functions
+                .grantFullAccessToDbForFunctions()
+//                  Task 3
                 .createApiGateway();
-
         app.synth();
     }
 }
