@@ -3,16 +3,18 @@
 
 [versions]
 aws = "2.25.69"
-aws-cdk="2.146.0"
-aws-lambda-core="1.2.3"
-aws-lambda-events="3.11.6"
-aws-lambda-test="1.1.1"
-aws-lambda-log4j="1.6.0"
+aws-cdk = "2.146.0"
+aws-lambda-core = "1.2.3"
+aws-lambda-events = "3.11.6"
+aws-lambda-test = "1.1.1"
+aws-lambda-log4j = "1.6.0"
+aws-dynamo-db = "1.12.747"
+aws-dynamodb-local = "2.5.0"
 guava = "32.1.2-jre"
 junit-jupiter = "5.10.0"
 spring = "6.1.8"
-jackson-jr-all="2.17.1"
-
+jackson-jr-all = "2.17.1"
+lombok = "1.18.32"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -26,7 +28,9 @@ aws-s3 = { group = "software.amazon.awssdk", name = "s3", version.ref = "aws" }
 aws-protocol-core = { group = "software.amazon.awssdk", name = "protocol-core", version.ref = "aws" }
 aws-http-auth = { group = "software.amazon.awssdk", name = "http-auth-aws", version.ref = "aws" }
 aws-json-protocol = { group = "software.amazon.awssdk", name = "aws-json-protocol", version.ref = "aws" }
-aws-dynamodb = { group = "software.amazon.awssdk", name = "dynamodb", version.ref = "aws" }
+aws-sdk-dynamodb = { group = "software.amazon.awssdk", name = "dynamodb", version.ref = "aws" }
+aws-dynamodb-enhanced = { group = "software.amazon.awssdk", name = "dynamodb-enhanced", version.ref = "aws" }
+aws-dynamodb-local = { group = "com.amazonaws", name = "DynamoDBLocal", version.ref = "aws-dynamodb-local" }
 aws-auth = { group = "software.amazon.awssdk", name = "auth", version.ref = "aws" }
 aws-regions = { group = "software.amazon.awssdk", name = "regions", version.ref = "aws" }
 aws-utils = { group = "software.amazon.awssdk", name = "utils", version.ref = "aws" }
@@ -44,3 +48,6 @@ aws-lambda-core = { group = "com.amazonaws", name = "aws-lambda-java-core", vers
 aws-lambda-events = { group = "com.amazonaws", name = "aws-lambda-java-events", version.ref = "aws-lambda-events" }
 aws-lambda-log = { group = "com.amazonaws", name = "aws-lambda-java-log4j2", version.ref = "aws-lambda-log4j" }
 aws-lambda-test = { group = "com.amazonaws", name = "aws-lambda-java-tests", version.ref = "aws-lambda-test" }
+aws-dynamodb = { group = "com.amazonaws", name = "aws-java-sdk-dynamodb", version.ref = "aws-dynamo-db" }
+
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
