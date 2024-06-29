@@ -1,0 +1,54 @@
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'by.jenka.rss-backend.importservice'
+version = ''
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation libs.aws.lambda.core
+    implementation libs.aws.lambda.events
+    // implementation libs.aws.dynamodb
+    // implementation libs.aws.dynamodb.enhanced
+    implementation libs.aws.s3
+//    implementation libs.aws.s3.transfer.manager
+
+//     implementation libs.jackson.jr
+
+    implementation libs.open.csv
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+//    runtimeOnly libs.aws.lambda.log
+//     Test
+    testImplementation libs.aws.lambda.test
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.jsonpath
+
+    testImplementation libs.aws.dynamodb.local
+}
+
+test {
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveVersion = ''
+    archiveBaseName = 'lambda-import'
+}
+
+build.dependsOn shadowJar

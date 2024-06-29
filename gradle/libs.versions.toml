@@ -15,11 +15,19 @@ junit-jupiter = "5.10.0"
 spring = "6.1.8"
 jackson-jr-all = "2.17.1"
 lombok = "1.18.32"
+mockito = '2.1.0'
+json-path = '2.9.0'
+opencsv = '5.9'
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+
 spring-core = { module = "org.springframework:spring-core", version.ref = "spring" }
+open-csv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv"}
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
 jackson-jr = { group = "com.fasterxml.jackson.jr", name = "jackson-jr-all", version.ref = "jackson-jr-all" }
 
