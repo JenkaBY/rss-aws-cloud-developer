@@ -7,15 +7,19 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.logging.LogLevel;
+import lombok.Setter;
 
+import java.time.Clock;
 import java.util.Map;
 
 import static by.jenka.rss.importservice.lambda.handler.util.Headers.DEFAULT_API_HEADERS;
 
+@Setter
 public class ImportProductsFileHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final String FOLDER_FOR_UPLOAD = System.getenv().getOrDefault("FOLDER_FOR_UPLOAD", "replace-me");
     private S3PreSignedRequestService preSignedRequestService = new S3PreSignedRequestService();
+    private Clock clock = Clock.systemUTC();
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -61,7 +65,7 @@ public class ImportProductsFileHandler implements RequestHandler<APIGatewayProxy
     private String uniqueFileName(String fileNameWithExt) {
         var nameAndExt = fileNameWithExt.split("\\.");
         return nameAndExt[0]
-                + "-" + System.currentTimeMillis()
+                + "-" + clock.millis()
                 + "." + nameAndExt[1];
     }
 }

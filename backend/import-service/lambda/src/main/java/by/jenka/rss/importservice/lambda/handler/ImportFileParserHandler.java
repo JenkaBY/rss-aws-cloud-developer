@@ -8,8 +8,6 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.Setter;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 

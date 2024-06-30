@@ -36,9 +36,11 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation libs.junit.jupiter
     testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
     testImplementation libs.jsonpath
 
-    testImplementation libs.aws.dynamodb.local
+    testImplementation libs.system.stub.core
+    testImplementation libs.system.stub.jupiter
 }
 
 test {
