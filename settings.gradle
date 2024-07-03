@@ -10,5 +10,10 @@ include('app',
         ':backend:import-service',
         ':backend:import-service:deploy',
         ':backend:import-service:lambda',
+        ':backend:product-service',
+        ':backend:product-service:deploy',
+        ':backend:product-service:lambda',
 )
+include 'backend:product-service:deploy'
+findProject(':backend:product-service:deploy')?.name = 'deploy'
 

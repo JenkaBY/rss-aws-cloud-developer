@@ -1,0 +1,16 @@
+{
+  "app": "../../../gradlew clean :backend:product-service:lambda:build :backend:product-service:deploy:run",
+  "watch": {
+    "include": [
+      "**"
+    ],
+    "exclude": [
+      "cdk*.json",
+      "target",
+      "build.gradle",
+      "src/test"
+    ]
+  },
+  "context": {
+  }
+}

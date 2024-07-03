@@ -3,7 +3,7 @@ plugins {
     id"com.github.node-gradle.node" version "7.0.2"
 }
 
-var outputDir = "$rootDir/app/src/main/resources/static"
+var outputDir = "$rootDir/backend/product-service/deploy/src/main/resources/static"
 
 
 clean {
