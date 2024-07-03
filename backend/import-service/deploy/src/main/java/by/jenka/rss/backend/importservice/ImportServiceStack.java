@@ -174,6 +174,10 @@ public class ImportServiceStack extends Stack {
                         .create(importProductsFileHandler)
                         .timeout(TWENTY_SEC)
                         .build()
+//                TODO enable when issue with cdk is fixed
+//                ,MethodOptions.builder()
+//                        .requestParameters(Map.of("method.request.querystring.name", true))
+//                        .build()
         );
 
         var importFileDeployment = Deployment.Builder.create(this, "RSS-import-file-api-deployment")
