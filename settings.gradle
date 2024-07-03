@@ -3,9 +3,7 @@ plugins {
 }
 
 rootProject.name = 'rss-task2-3'
-include('app',
-        'webapp',
-        'lambda',
+include('webapp',
         'backend',
         ':backend:import-service',
         ':backend:import-service:deploy',
@@ -14,6 +12,4 @@ include('app',
         ':backend:product-service:deploy',
         ':backend:product-service:lambda',
 )
-include 'backend:product-service:deploy'
-findProject(':backend:product-service:deploy')?.name = 'deploy'
 
