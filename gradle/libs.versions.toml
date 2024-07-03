@@ -15,11 +15,21 @@ junit-jupiter = "5.10.0"
 spring = "6.1.8"
 jackson-jr-all = "2.17.1"
 lombok = "1.18.32"
+mockito = '2.1.0'
+json-path = '2.9.0'
+opencsv = '5.9'
+system-stub = "2.1.6"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+
 spring-core = { module = "org.springframework:spring-core", version.ref = "spring" }
+open-csv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv"}
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.12.0" }
+jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
 jackson-jr = { group = "com.fasterxml.jackson.jr", name = "jackson-jr-all", version.ref = "jackson-jr-all" }
 
@@ -51,3 +61,5 @@ aws-lambda-test = { group = "com.amazonaws", name = "aws-lambda-java-tests", ver
 aws-dynamodb = { group = "com.amazonaws", name = "aws-java-sdk-dynamodb", version.ref = "aws-dynamo-db" }
 
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+system-stub-core = { group = "uk.org.webcompere", name = "system-stubs-core", version.ref = "system-stub" }
+system-stub-jupiter = { group = "uk.org.webcompere", name = "system-stubs-jupiter", version.ref = "system-stub" }
