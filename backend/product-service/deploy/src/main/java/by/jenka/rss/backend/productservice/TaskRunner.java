@@ -28,7 +28,10 @@ public class TaskRunner {
                 .createGetProductByIdLambda()
                 .createPostProductLambda()
                 .grantFullAccessToDbForLambdas()
-                .createApiGateway();
+//                Task 6
+                .createCatalogItemsSqs()
+                .createCatalogBatchProcessLambda()
+                .createProductApiGateway();
 
         app.synth();
         System.out.println("---------------  End app");

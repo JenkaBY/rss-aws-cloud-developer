@@ -16,10 +16,12 @@ import software.amazon.awscdk.services.lambda.AssetCode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.deployment.BucketDeployment;
 import software.amazon.awscdk.services.s3.deployment.Source;
+import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public class ProductServiceStack extends Stack {
     private Function getProductsHandler;
     private Function getProductByIdHandler;
     private Function postProductHandler;
+    private Function catalogBatchProcessHandler;
 
     private Bucket feS3Hosting;
     private OriginAccessIdentity oai;
@@ -55,6 +58,7 @@ public class ProductServiceStack extends Stack {
     private Table productTable;
     private Table stockTable;
 
+    private Queue catalogItemsQueue;
 
     public ProductServiceStack(@Nullable Construct scope, @Nullable String id, @Nullable StackProps props) {
         super(scope, id, props);
@@ -139,8 +143,8 @@ public class ProductServiceStack extends Stack {
         return this;
     }
 
-    public ProductServiceStack createApiGateway() {
-        System.out.println("Create createApiGateway");
+    public ProductServiceStack createProductApiGateway() {
+        System.out.println("Create Product Api Gateway");
         var api = ApiGateway.Builder.create(
                         RestApi.Builder
                                 .create(this, "RssProductGatewayApi")
@@ -178,7 +182,7 @@ public class ProductServiceStack extends Stack {
         addCorsOptions(productById);
 
         CfnOutput.Builder.create(this, "product-ui").value(feDistribution.getDistributionDomainName()).build();
-        System.out.println("Created createApiGateway");
+        System.out.println("Created Product Api Gateway");
         return this;
     }
 
@@ -230,6 +234,31 @@ public class ProductServiceStack extends Stack {
         return this;
     }
 
+    public ProductServiceStack createCatalogBatchProcessLambda() {
+        System.out.println("Create CatalogBatchProcess lambda");
+        catalogBatchProcessHandler = Function.Builder.create(this, POST_PRODUCT)
+                .description("Created via java cdk")
+                .functionName("catalogBatchProcess")
+                .code(LAMBDA_JAR)
+                .handler("by.jenka.rss.productservice.lambda.handler.CatalogBatchProcessHandler")
+                .runtime(Runtime.JAVA_17)
+                .memorySize(512)
+                .timeout(TWENTY_SEC)
+                .environment(lambdaEnvMap)
+                .events(
+                        List.of(SqsEventSource.Builder.create(catalogItemsQueue)
+                                .batchSize(5)
+                                .enabled(true)
+                                .maxBatchingWindow(Duration.seconds(5))
+                                .build()
+                        )
+                )
+                .build();
+        System.out.println("Created CatalogBatchProcess lambda");
+        ;
+        return this;
+    }
+
     public ProductServiceStack createProductTable() {
         TableProps tableProps;
         Attribute partitionKey = Attribute.builder()
@@ -273,6 +302,16 @@ public class ProductServiceStack extends Stack {
                     stockTable.grantFullAccess(f);
                 }
         );
+        return this;
+    }
+
+    public ProductServiceStack createCatalogItemsSqs() {
+        catalogItemsQueue = Queue.Builder.create(this, "RssCatalogItemsQueue")
+                .queueName("catalogItemsQueue")
+                .contentBasedDeduplication(true)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .visibilityTimeout(Duration.seconds(300))
+                .build();
         return this;
     }
 
