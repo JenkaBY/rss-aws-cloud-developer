@@ -3,6 +3,7 @@
 
 [versions]
 aws = "2.25.69"
+aws-sqs = "1.12.755"
 aws-cdk = "2.146.0"
 aws-lambda-core = "1.2.3"
 aws-lambda-events = "3.11.6"
@@ -42,6 +43,7 @@ aws-sdk-dynamodb = { group = "software.amazon.awssdk", name = "dynamodb", versio
 aws-dynamodb-enhanced = { group = "software.amazon.awssdk", name = "dynamodb-enhanced", version.ref = "aws" }
 aws-dynamodb-local = { group = "com.amazonaws", name = "DynamoDBLocal", version.ref = "aws-dynamodb-local" }
 aws-auth = { group = "software.amazon.awssdk", name = "auth", version.ref = "aws" }
+aws-sqs = { group = "com.amazonaws", name = "aws-java-sdk-sqs", version.ref = "aws-sqs" }
 aws-regions = { group = "software.amazon.awssdk", name = "regions", version.ref = "aws" }
 aws-utils = { group = "software.amazon.awssdk", name = "utils", version.ref = "aws" }
 aws-core = { group = "software.amazon.awssdk", name = "aws-core", version.ref = "aws" }

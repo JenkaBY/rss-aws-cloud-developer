@@ -1,12 +1,11 @@
 package by.jenka.rss.importservice.lambda.handler;
 
 import by.jenka.rss.importservice.lambda.config.bean.S3Manager;
-import by.jenka.rss.importservice.lambda.service.ProductParser;
+import by.jenka.rss.importservice.lambda.service.PrinterProductParser;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +30,7 @@ class ImportFileParserHandlerTest {
     private static final String UPLOADED = "test-uploaded";
     private static final String PARSED = "test-parsed";
     private S3Manager s3Manager;
-    private ProductParser productParser;
+    private PrinterProductParser productParser;
     private Context context;
     private ImportFileParserHandler underTest;
 
@@ -46,7 +45,7 @@ class ImportFileParserHandlerTest {
     @BeforeEach
     void setUp() {
         s3Manager = mock(S3Manager.class);
-        productParser = mock(ProductParser.class);
+        productParser = mock(PrinterProductParser.class);
         context = mock(Context.class);
         when(context.getLogger()).thenReturn(mock(LambdaLogger.class));
 

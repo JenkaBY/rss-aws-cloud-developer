@@ -14,9 +14,10 @@ repositories {
 dependencies {
     implementation libs.aws.lambda.core
     implementation libs.aws.lambda.events
-    // implementation libs.aws.dynamodb
-    // implementation libs.aws.dynamodb.enhanced
+    implementation libs.aws.sqs
+
     implementation libs.aws.s3
+    implementation libs.jackson.jr
 //    implementation libs.aws.s3.transfer.manager
 
 //     implementation libs.jackson.jr
