@@ -31,6 +31,8 @@ public class TaskRunner {
 //                Task 6
                 .createCatalogItemsSqs()
                 .createCatalogBatchProcessLambda()
+                .initImportFileHandlerFunction()
+                .grantPermissionsToQueueProcessing()
                 .createProductApiGateway();
 
         app.synth();

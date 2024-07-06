@@ -12,10 +12,8 @@ import software.amazon.awscdk.services.dynamodb.*;
 import software.amazon.awscdk.services.events.targets.ApiGateway;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
-import software.amazon.awscdk.services.lambda.AssetCode;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
@@ -36,7 +34,7 @@ public class ProductServiceStack extends Stack {
     private static final String WEB_APP_RESOURCES = "./build/resources/main/static";
     private static final String GET_ALL_PRODUCTS = "GetProducts";
     private static final String GET_PRODUCT_BY_ID = "GetProductsById";
-    private static final String POST_PRODUCT = "PostProducts";
+    private static final String POST_PRODUCTS = "PostProducts";
 
     private static final String RSS_PRODUCT_GATEWAY_API = "RSS-cloud-product-automated-api";
     private static final String AWS_CLOUDFRONT_URL = "cloudfront.amazonaws.com";
@@ -51,6 +49,7 @@ public class ProductServiceStack extends Stack {
     private Function getProductByIdHandler;
     private Function postProductHandler;
     private Function catalogBatchProcessHandler;
+    private IFunction importFileHandler;
 
     private Bucket feS3Hosting;
     private OriginAccessIdentity oai;
@@ -220,9 +219,9 @@ public class ProductServiceStack extends Stack {
 
     public ProductServiceStack createPostProductLambda() {
         System.out.println("Create CreateProduct lambda from DynamoDB");
-        postProductHandler = Function.Builder.create(this, POST_PRODUCT)
+        postProductHandler = Function.Builder.create(this, POST_PRODUCTS)
                 .description("Created via java cdk")
-                .functionName("postProductFromDbHandler")
+                .functionName("postProducts")
                 .code(LAMBDA_JAR)
                 .handler("by.jenka.rss.productservice.lambda.handler.PostProductHandler")
                 .runtime(Runtime.JAVA_17)
@@ -236,8 +235,8 @@ public class ProductServiceStack extends Stack {
 
     public ProductServiceStack createCatalogBatchProcessLambda() {
         System.out.println("Create CatalogBatchProcess lambda");
-        catalogBatchProcessHandler = Function.Builder.create(this, POST_PRODUCT)
-                .description("Created via java cdk")
+        catalogBatchProcessHandler = Function.Builder.create(this, "CatalogBatchProcessor")
+                .description("Created via java cdk. Task 6")
                 .functionName("catalogBatchProcess")
                 .code(LAMBDA_JAR)
                 .handler("by.jenka.rss.productservice.lambda.handler.CatalogBatchProcessHandler")
@@ -255,7 +254,6 @@ public class ProductServiceStack extends Stack {
                 )
                 .build();
         System.out.println("Created CatalogBatchProcess lambda");
-        ;
         return this;
     }
 
@@ -296,7 +294,7 @@ public class ProductServiceStack extends Stack {
     }
 
     public ProductServiceStack grantFullAccessToDbForLambdas() {
-        List<Function> allDbFunctions = List.of(getProductByIdHandler, getProductsHandler, postProductHandler);
+        List<Function> allDbFunctions = List.of(getProductByIdHandler, getProductsHandler, postProductHandler, catalogBatchProcessHandler);
         allDbFunctions.forEach(f -> {
                     productTable.grantFullAccess(f);
                     stockTable.grantFullAccess(f);
@@ -308,13 +306,28 @@ public class ProductServiceStack extends Stack {
     public ProductServiceStack createCatalogItemsSqs() {
         catalogItemsQueue = Queue.Builder.create(this, "RssCatalogItemsQueue")
                 .queueName("catalogItemsQueue")
-                .contentBasedDeduplication(true)
+                .fifo(false)
+                .contentBasedDeduplication(false)
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .visibilityTimeout(Duration.seconds(300))
                 .build();
         return this;
     }
 
+    public ProductServiceStack grantPermissionsToQueueProcessing() {
+        System.out.println("Grand permissions for publishing and consuming");
+        catalogItemsQueue.grantConsumeMessages(catalogBatchProcessHandler);
+
+        catalogItemsQueue.grantSendMessages(importFileHandler);
+        System.out.println("Permissions granted for publishing and consuming");
+        return this;
+    }
+
+    public ProductServiceStack initImportFileHandlerFunction() {
+        var importFunctionArn = Fn.importValue("ImportFileHandlerArn");
+        importFileHandler = Function.fromFunctionArn(this, "ImportFileParserHandler", importFunctionArn);
+        return this;
+    }
     private void addCorsOptions(software.amazon.awscdk.services.apigateway.IResource item) {
         List<MethodResponse> methodResponses = new ArrayList<>();
 

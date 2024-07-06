@@ -1,11 +1,7 @@
 package by.jenka.rss.productservice.lambda.handler;
 
-import by.jenka.rss.productservice.lambda.config.DBConfig;
-import by.jenka.rss.productservice.lambda.repository.DefaultProductRepository;
-import by.jenka.rss.productservice.lambda.repository.ProductRepository;
 import by.jenka.rss.productservice.lambda.service.CatalogBatchProcessor;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import lombok.Setter;

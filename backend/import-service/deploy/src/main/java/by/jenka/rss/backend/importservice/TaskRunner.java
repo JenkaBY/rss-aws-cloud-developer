@@ -20,7 +20,8 @@ public class TaskRunner {
                 .createImportFileParserHandlerLambda()
                 .createImportProductsFileHandlerLambda()
                 .createImportFilesApiGateway()
-                .grantRWPermissionsToS3();
+                .grantRWPermissionsToS3()
+                .outputStackVariables();
 
         app.synth();
         System.out.println("---------------  End app");

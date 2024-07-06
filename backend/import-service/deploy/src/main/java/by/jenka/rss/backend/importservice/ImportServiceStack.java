@@ -1,10 +1,7 @@
 package by.jenka.rss.backend.importservice;
 
 import org.jetbrains.annotations.Nullable;
-import software.amazon.awscdk.Duration;
-import software.amazon.awscdk.RemovalPolicy;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.*;
 import software.amazon.awscdk.services.apigateway.Deployment;
 import software.amazon.awscdk.services.apigateway.LambdaIntegration;
 import software.amazon.awscdk.services.apigateway.RestApi;
@@ -197,6 +194,15 @@ public class ImportServiceStack extends Stack {
 //                .build();
 
         System.out.println("Created import-files apiGateway");
+        return this;
+    }
+
+    public ImportServiceStack outputStackVariables() {
+        CfnOutput.Builder.create(this, "ImportFileHandlerArnOutput")
+                .key("ImportFileHandlerArn")
+                .value(importFileParserHandler.getFunctionArn())
+                .build();
+
         return this;
     }
 }
