@@ -14,6 +14,8 @@ import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.lambda.eventsources.S3EventSource;
 import software.amazon.awscdk.services.s3.*;
+import software.amazon.awscdk.services.sqs.IQueue;
+import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
 import java.util.HashMap;
@@ -27,7 +29,7 @@ public class ImportServiceStack extends Stack {
     private static final AssetCode LAMBDA_IMPORT_JAR = Code.fromAsset("../lambda/build/libs/lambda-import-all.jar");
     private static final Map<String, String> lambdaEnvMap = new HashMap<>(Map.of("ENV", "PROD"));
     private static final Duration TWENTY_SEC = Duration.seconds(20);
-//    env variables
+    //    env variables
     private static final String UPLOADED_FOLDER_NAME = "uploaded";
     private static final String PARSED_FOLDER_NAME = "parsed";
     private static final int BATCH_SIZE = 5;
@@ -36,6 +38,7 @@ public class ImportServiceStack extends Stack {
     private Function importFileParserHandler;
     private Function importProductsFileHandler;
     private Bucket importFilesBucket;
+    private IQueue catalogItemsQueue;
 
     public ImportServiceStack(@Nullable Construct scope, @Nullable String id, @Nullable StackProps props) {
         super(scope, id, props);
@@ -76,7 +79,6 @@ public class ImportServiceStack extends Stack {
         lambdaEnvMap.put("IMPORT_BUCKET_NAME", importFilesBucket.getBucketName());
         lambdaEnvMap.put("FOLDER_FOR_UPLOAD", UPLOADED_FOLDER_NAME);
         lambdaEnvMap.put("FOLDER_FOR_PARSED", PARSED_FOLDER_NAME);
-        lambdaEnvMap.put("CATALOG_ITEM_QUEUE", CATALOG_ITEM_QUEUE_TOPIC_NAME);
         lambdaEnvMap.put("BATCH_SIZE", String.valueOf(BATCH_SIZE));
         return this;
     }
@@ -197,12 +199,18 @@ public class ImportServiceStack extends Stack {
         return this;
     }
 
-    public ImportServiceStack outputStackVariables() {
-        CfnOutput.Builder.create(this, "ImportFileHandlerArnOutput")
-                .key("ImportFileHandlerArn")
-                .value(importFileParserHandler.getFunctionArn())
-                .build();
+    public ImportServiceStack grantPermissionsToQueueProcessing() {
+        System.out.println("Grand permissions for publishing");
 
+        catalogItemsQueue.grantSendMessages(importFileParserHandler);
+        System.out.println("Permissions granted for publishing and consuming");
+        return this;
+    }
+
+    public ImportServiceStack initCatalogItemsQueue() {
+        var catalogItemsQueueTopicArn = Fn.importValue("CatalogItemsQueueTopicArn");
+        catalogItemsQueue = Queue.fromQueueArn(this, "CatalogItemsQueueTopic", catalogItemsQueueTopicArn);
+        lambdaEnvMap.put("CATALOG_ITEM_QUEUE_TOPIC_URL", catalogItemsQueue.getQueueUrl());
         return this;
     }
 }

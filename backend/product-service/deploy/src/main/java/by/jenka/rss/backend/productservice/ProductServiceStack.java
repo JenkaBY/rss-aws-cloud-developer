@@ -1,5 +1,7 @@
 package by.jenka.rss.backend.productservice;
 
+import by.jenka.rss.backend.productservice.config.AwsConfig;
+import by.jenka.rss.backend.productservice.sdk.task2.Utils;
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awscdk.*;
 import software.amazon.awscdk.services.apigateway.*;
@@ -19,6 +21,9 @@ import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.deployment.BucketDeployment;
 import software.amazon.awscdk.services.s3.deployment.Source;
+import software.amazon.awscdk.services.sns.NumericConditions;
+import software.amazon.awscdk.services.sns.SubscriptionFilter;
+import software.amazon.awscdk.services.sns.Topic;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
@@ -44,6 +49,7 @@ public class ProductServiceStack extends Stack {
     private static final String OAI_ID = "OAI-for-FE-hosting-in-S3";
     private static final Map<String, String> lambdaEnvMap = new HashMap<>(Map.of("ENV", "PROD"));
     private static final Duration TWENTY_SEC = Duration.seconds(20);
+    private static final String CREATE_PRODUCT_TOPIC_ARN = "CREATE_PRODUCT_TOPIC_ARN";
 
     private Function getProductsHandler;
     private Function getProductByIdHandler;
@@ -58,6 +64,7 @@ public class ProductServiceStack extends Stack {
     private Table stockTable;
 
     private Queue catalogItemsQueue;
+    private Topic createProductTopic;
 
     public ProductServiceStack(@Nullable Construct scope, @Nullable String id, @Nullable StackProps props) {
         super(scope, id, props);
@@ -304,6 +311,7 @@ public class ProductServiceStack extends Stack {
     }
 
     public ProductServiceStack createCatalogItemsSqs() {
+        System.out.println("Create Catalog Items SQS");
         catalogItemsQueue = Queue.Builder.create(this, "RssCatalogItemsQueue")
                 .queueName("catalogItemsQueue")
                 .fifo(false)
@@ -311,6 +319,36 @@ public class ProductServiceStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .visibilityTimeout(Duration.seconds(300))
                 .build();
+        System.out.println("Created Catalog Items SQS");
+        return this;
+    }
+
+    public ProductServiceStack createProductTopic() {
+        System.out.println("Create createProductTopic SNS");
+        createProductTopic = Topic.Builder.create(this, "RssCreateProductTopic")
+                .fifo(false)
+                .displayName("RssCreateProductTopic")
+                .topicName("createProductTopic")
+                .build();
+
+//        notify all
+        Utils.convertToEmailSubscriptions(AwsConfig.getCreateProductNotificationEmails()).forEach(
+                createProductTopic::addSubscription
+        );
+
+//        With FilterPolicy
+        var emailsForFilter = AwsConfig.getCreateSpecialProductNotificationEmails();
+        var priceGreaterThan100 = Map.of(
+                "price", SubscriptionFilter.numericFilter(
+                        NumericConditions.builder()
+                                .greaterThan(100)
+                                .build()
+                )
+        );
+        Utils.convertToEmailSubscriptions(emailsForFilter, priceGreaterThan100)
+                .forEach(createProductTopic::addSubscription);
+        lambdaEnvMap.put(CREATE_PRODUCT_TOPIC_ARN, createProductTopic.getTopicArn());
+        System.out.println("Created createProductTopic SNS");
         return this;
     }
 
@@ -318,16 +356,15 @@ public class ProductServiceStack extends Stack {
         System.out.println("Grand permissions for publishing and consuming");
         catalogItemsQueue.grantConsumeMessages(catalogBatchProcessHandler);
 
-        catalogItemsQueue.grantSendMessages(importFileHandler);
         System.out.println("Permissions granted for publishing and consuming");
         return this;
     }
 
-    public ProductServiceStack initImportFileHandlerFunction() {
-        var importFunctionArn = Fn.importValue("ImportFileHandlerArn");
-        importFileHandler = Function.fromFunctionArn(this, "ImportFileParserHandler", importFunctionArn);
+    public ProductServiceStack outputStackVariables() {
+        CfnOutput.Builder.create(this, "CatalogItemsQueueTopicArn").value(catalogItemsQueue.getQueueArn()).build();
         return this;
     }
+
     private void addCorsOptions(software.amazon.awscdk.services.apigateway.IResource item) {
         List<MethodResponse> methodResponses = new ArrayList<>();
 

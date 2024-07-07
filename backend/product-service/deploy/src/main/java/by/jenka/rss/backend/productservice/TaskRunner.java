@@ -30,10 +30,11 @@ public class TaskRunner {
                 .grantFullAccessToDbForLambdas()
 //                Task 6
                 .createCatalogItemsSqs()
+                .createProductTopic()
                 .createCatalogBatchProcessLambda()
-                .initImportFileHandlerFunction()
                 .grantPermissionsToQueueProcessing()
-                .createProductApiGateway();
+                .createProductApiGateway()
+                .outputStackVariables();
 
         app.synth();
         System.out.println("---------------  End app");

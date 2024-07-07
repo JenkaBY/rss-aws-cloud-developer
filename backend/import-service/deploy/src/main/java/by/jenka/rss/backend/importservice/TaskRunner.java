@@ -17,11 +17,12 @@ public class TaskRunner {
                 .build());
         new ImportServiceStack(app, RSS_ALL_TASKS_STACK_NAME)
                 .createS3BucketForImportFiles()
+                .initCatalogItemsQueue()
                 .createImportFileParserHandlerLambda()
                 .createImportProductsFileHandlerLambda()
                 .createImportFilesApiGateway()
                 .grantRWPermissionsToS3()
-                .outputStackVariables();
+                .grantPermissionsToQueueProcessing();
 
         app.synth();
         System.out.println("---------------  End app");

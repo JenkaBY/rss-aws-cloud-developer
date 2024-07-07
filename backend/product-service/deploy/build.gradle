@@ -43,5 +43,5 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-processResources.dependsOn ':webapp:buildAngularApp'
-processResources.dependsOn ':backend:product-service:lambda:build'
+//processResources.dependsOn ':webapp:buildAngularApp'
+//processResources.dependsOn ':backend:product-service:lambda:build'

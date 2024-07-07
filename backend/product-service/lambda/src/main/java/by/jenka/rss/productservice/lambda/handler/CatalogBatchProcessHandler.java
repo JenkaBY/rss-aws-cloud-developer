@@ -14,9 +14,7 @@ public class CatalogBatchProcessHandler implements RequestHandler<SQSEvent, Void
     public Void handleRequest(SQSEvent input, Context context) {
         var logger = context.getLogger();
         logger.log("SQS Event received. Total records " + input.getRecords().size());
-        for (SQSEvent.SQSMessage msg : input.getRecords()) {
-            processor.processMessage(msg, logger);
-        }
+        processor.processMessages(input.getRecords(), logger);
         logger.log("All messages have been processed");
         return null;
     }
