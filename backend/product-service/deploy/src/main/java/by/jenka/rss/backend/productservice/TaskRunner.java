@@ -27,13 +27,13 @@ public class TaskRunner {
                 .createProductsListLambda()
                 .createGetProductByIdLambda()
                 .createPostProductLambda()
-                .grantFullAccessToDbForLambdas()
 //                Task 6
                 .createCatalogItemsSqs()
                 .createProductTopic()
                 .createCatalogBatchProcessLambda()
-                .grantPermissionsToQueueProcessing()
+                .grantPermissionsToMessagingProcessing()
                 .createProductApiGateway()
+                .grantFullAccessToDbForLambdas()
                 .outputStackVariables();
 
         app.synth();

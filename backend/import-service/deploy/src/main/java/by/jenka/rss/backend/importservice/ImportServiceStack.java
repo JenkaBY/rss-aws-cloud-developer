@@ -2,8 +2,8 @@ package by.jenka.rss.backend.importservice;
 
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awscdk.*;
-import software.amazon.awscdk.services.apigateway.Deployment;
 import software.amazon.awscdk.services.apigateway.LambdaIntegration;
+import software.amazon.awscdk.services.apigateway.MethodOptions;
 import software.amazon.awscdk.services.apigateway.RestApi;
 import software.amazon.awscdk.services.events.targets.ApiGateway;
 import software.amazon.awscdk.services.iam.Effect;
@@ -165,8 +165,8 @@ public class ImportServiceStack extends Stack {
                                 .create(this, "ImportFilesApiGateway")
                                 .description("Created by java cdk. It's a import files API (Task 5)")
                                 .restApiName("RSS-import-files-api-gateway")
-                                .cloudWatchRole(true)
-                                .cloudWatchRoleRemovalPolicy(RemovalPolicy.DESTROY)
+//                                .cloudWatchRole(true)
+//                                .cloudWatchRoleRemovalPolicy(RemovalPolicy.DESTROY)
                                 .build())
                 .build();
 
@@ -179,15 +179,15 @@ public class ImportServiceStack extends Stack {
                         .timeout(TWENTY_SEC)
                         .build()
 //                TODO enable when issue with cdk is fixed
-//                ,MethodOptions.builder()
-//                        .requestParameters(Map.of("method.request.querystring.name", true))
-//                        .build()
+                , MethodOptions.builder()
+                        .requestParameters(Map.of("method.request.querystring.name", true))
+                        .build()
         );
 
-        var importFileDeployment = Deployment.Builder.create(this, "RSS-import-file-api-deployment")
-                .api(api.getIRestApi())
-                .description("Created from Java CDK for RSS-import-files-api")
-                .build();
+//        var importFileDeployment = Deployment.Builder.create(this, "RSS-import-file-api-deployment")
+//                .api(api.getIRestApi())
+//                .description("Created from Java CDK for RSS-import-files-api")
+//                .build();
 //
 //        var prodStage = Stage.Builder.create(this, "RSS-import-file-api-DEV-stage")
 //                .stageName("dev")
@@ -208,9 +208,16 @@ public class ImportServiceStack extends Stack {
     }
 
     public ImportServiceStack initCatalogItemsQueue() {
+        System.out.println("Init catalogItemsQueue");
         var catalogItemsQueueTopicArn = Fn.importValue("CatalogItemsQueueTopicArn");
+        System.out.println("from Fn import catalogItemsQueueTopicArn " + catalogItemsQueueTopicArn);
         catalogItemsQueue = Queue.fromQueueArn(this, "CatalogItemsQueueTopic", catalogItemsQueueTopicArn);
+        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueName());
+        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueArn());
+        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueUrl());
         lambdaEnvMap.put("CATALOG_ITEM_QUEUE_TOPIC_URL", catalogItemsQueue.getQueueUrl());
+        System.out.println("Initialisation catalogItemsQueue completed");
+
         return this;
     }
 }

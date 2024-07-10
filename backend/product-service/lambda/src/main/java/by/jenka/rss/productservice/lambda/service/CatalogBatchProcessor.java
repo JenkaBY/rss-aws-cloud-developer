@@ -69,7 +69,8 @@ public class CatalogBatchProcessor {
                                                     .messageAttributes(
                                                             Map.of(
                                                                     "price", MessageAttributeValue.builder()
-                                                                            .dataType(String.valueOf(product.getPrice()))
+                                                                            .stringValue(String.valueOf(product.getPrice()))
+                                                                            .dataType("Number")
                                                                             .build()
                                                             )
                                                     )

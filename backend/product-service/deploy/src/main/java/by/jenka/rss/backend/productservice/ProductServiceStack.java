@@ -14,8 +14,10 @@ import software.amazon.awscdk.services.dynamodb.*;
 import software.amazon.awscdk.services.events.targets.ApiGateway;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
+import software.amazon.awscdk.services.lambda.AssetCode;
+import software.amazon.awscdk.services.lambda.Code;
+import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
-import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
@@ -55,7 +57,6 @@ public class ProductServiceStack extends Stack {
     private Function getProductByIdHandler;
     private Function postProductHandler;
     private Function catalogBatchProcessHandler;
-    private IFunction importFileHandler;
 
     private Bucket feS3Hosting;
     private OriginAccessIdentity oai;
@@ -314,10 +315,8 @@ public class ProductServiceStack extends Stack {
         System.out.println("Create Catalog Items SQS");
         catalogItemsQueue = Queue.Builder.create(this, "RssCatalogItemsQueue")
                 .queueName("catalogItemsQueue")
-                .fifo(false)
-                .contentBasedDeduplication(false)
                 .removalPolicy(RemovalPolicy.DESTROY)
-                .visibilityTimeout(Duration.seconds(300))
+                .visibilityTimeout(Duration.seconds(1))
                 .build();
         System.out.println("Created Catalog Items SQS");
         return this;
@@ -326,7 +325,6 @@ public class ProductServiceStack extends Stack {
     public ProductServiceStack createProductTopic() {
         System.out.println("Create createProductTopic SNS");
         createProductTopic = Topic.Builder.create(this, "RssCreateProductTopic")
-                .fifo(false)
                 .displayName("RssCreateProductTopic")
                 .topicName("createProductTopic")
                 .build();
@@ -352,16 +350,20 @@ public class ProductServiceStack extends Stack {
         return this;
     }
 
-    public ProductServiceStack grantPermissionsToQueueProcessing() {
+    public ProductServiceStack grantPermissionsToMessagingProcessing() {
         System.out.println("Grand permissions for publishing and consuming");
         catalogItemsQueue.grantConsumeMessages(catalogBatchProcessHandler);
 
+        createProductTopic.grantPublish(catalogBatchProcessHandler);
         System.out.println("Permissions granted for publishing and consuming");
         return this;
     }
 
     public ProductServiceStack outputStackVariables() {
-        CfnOutput.Builder.create(this, "CatalogItemsQueueTopicArn").value(catalogItemsQueue.getQueueArn()).build();
+        CfnOutput.Builder.create(this, "CatalogItemsQueueTopicArn")
+                .exportName("CatalogItemsQueueTopicArn")
+                .value(catalogItemsQueue.getQueueArn())
+                .build();
         return this;
     }
 
