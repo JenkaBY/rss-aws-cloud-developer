@@ -197,7 +197,7 @@ public class ProductServiceStack extends Stack {
         System.out.println("Create GetProductsFromDbHandler lambda from DynamoDB");
         getProductsHandler = Function.Builder.create(this, GET_ALL_PRODUCTS)
                 .description("Created via java cdk")
-                .functionName("getProductListFromDbAutomated")
+                .functionName("getProductListFromDb")
                 .code(LAMBDA_JAR)
                 .handler("by.jenka.rss.productservice.lambda.handler.GetProductsHandler")
                 .runtime(Runtime.JAVA_17)
@@ -210,10 +210,10 @@ public class ProductServiceStack extends Stack {
     }
 
     public ProductServiceStack createGetProductByIdLambda() {
-        System.out.println("Create GetProductByIdFromDbHandler lambda from DynamoDB");
+        System.out.println("Create GetProductByIdHandler lambda from DynamoDB");
         getProductByIdHandler = Function.Builder.create(this, GET_PRODUCT_BY_ID)
                 .description("Created via java cdk")
-                .functionName("getProductByIdFromDbHandler")
+                .functionName("getProductByIdHandler")
                 .code(LAMBDA_JAR)
                 .handler("by.jenka.rss.productservice.lambda.handler.GetProductByIdHandler")
                 .runtime(Runtime.JAVA_17)
@@ -221,7 +221,7 @@ public class ProductServiceStack extends Stack {
                 .timeout(TWENTY_SEC)
                 .environment(lambdaEnvMap)
                 .build();
-        System.out.println("Created GetProductsFromDbHandler lambda");
+        System.out.println("Created GetProductsByHandler lambda");
         return this;
     }
 
@@ -237,7 +237,7 @@ public class ProductServiceStack extends Stack {
                 .timeout(TWENTY_SEC)
                 .environment(lambdaEnvMap)
                 .build();
-        System.out.println("Created PostProductFromDbHandler lambda");
+        System.out.println("Created PostProductHandler lambda");
         return this;
     }
 

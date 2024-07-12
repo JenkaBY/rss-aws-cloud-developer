@@ -33,7 +33,6 @@ public class ImportServiceStack extends Stack {
     private static final String UPLOADED_FOLDER_NAME = "uploaded";
     private static final String PARSED_FOLDER_NAME = "parsed";
     private static final int BATCH_SIZE = 5;
-    private static final String CATALOG_ITEM_QUEUE_TOPIC_NAME = "catalogItemsQueue";
 
     private Function importFileParserHandler;
     private Function importProductsFileHandler;
@@ -177,9 +176,8 @@ public class ImportServiceStack extends Stack {
                 LambdaIntegration.Builder
                         .create(importProductsFileHandler)
                         .timeout(TWENTY_SEC)
-                        .build()
-//                TODO enable when issue with cdk is fixed
-                , MethodOptions.builder()
+                        .build(),
+                MethodOptions.builder()
                         .requestParameters(Map.of("method.request.querystring.name", true))
                         .build()
         );
