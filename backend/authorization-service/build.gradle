@@ -1,0 +1,38 @@
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
+
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
+
+//    runtimeOnly libs.aws.lambda.log
+//     Test
+        testImplementation libs.aws.lambda.test
+
+        testImplementation platform('org.junit:junit-bom:5.10.2')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testImplementation libs.mockito.core
+        testImplementation libs.jsonpath
+    }
+
+    test {
+        jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+        useJUnitPlatform()
+    }
+
+}
