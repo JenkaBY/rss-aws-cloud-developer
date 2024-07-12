@@ -2,6 +2,9 @@ package by.jenka.rss.importservice.lambda.handler;
 
 import by.jenka.rss.importservice.lambda.config.S3Config;
 import by.jenka.rss.importservice.lambda.config.bean.S3Manager;
+import by.jenka.rss.importservice.lambda.model.ProductAvailable;
+import by.jenka.rss.importservice.lambda.service.DefaultProductParser;
+import by.jenka.rss.importservice.lambda.service.ProductMessageSender;
 import by.jenka.rss.importservice.lambda.service.ProductParser;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
@@ -12,6 +15,7 @@ import lombok.Setter;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import java.io.InputStreamReader;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -20,8 +24,10 @@ public class ImportFileParserHandler implements RequestHandler<S3Event, String> 
 
     private static final String FOLDER_FOR_UPLOAD = System.getenv().getOrDefault("FOLDER_FOR_UPLOAD", "replace-me");
     private static final String FOLDER_FOR_PARSED = System.getenv().getOrDefault("FOLDER_FOR_PARSED", "replace-me");
+    private static final int BATCH_SIZE = Integer.parseInt(System.getenv().getOrDefault("BATCH_SIZE", "2"));
     private S3Manager s3Manager = new S3Manager();
-    private ProductParser productParser = new ProductParser();
+    private ProductParser productParser = new DefaultProductParser();
+    private ProductMessageSender productMessageSender = new ProductMessageSender();
 
     @Override
     public String handleRequest(S3Event input, Context context) {
@@ -31,7 +37,8 @@ public class ImportFileParserHandler implements RequestHandler<S3Event, String> 
             var s3Object = record.getS3().getObject();
             logger.log("Processing %s object".formatted(s3Object.getKey()));
 
-            parseCsv(s3Object, logger);
+            var products = parseCsv(s3Object, logger);
+            sendToQueue(products, logger);
             moveToParsedFolder(s3Object, logger);
 
             logger.log("File %s parsed successfully".formatted(s3Object.getKey()));
@@ -49,13 +56,17 @@ public class ImportFileParserHandler implements RequestHandler<S3Event, String> 
                 .formatted(bucketName, s3Object.getKey(), bucketName, destinationKey));
     }
 
-    private void parseCsv(S3EventNotification.S3ObjectEntity s3Object, LambdaLogger logger) {
+    private List<ProductAvailable> parseCsv(S3EventNotification.S3ObjectEntity s3Object, LambdaLogger logger) {
         logger.log("Parse CSV file %s".formatted(s3Object.getKey()));
         var inputStream = s3Manager.getS3().getObject(GetObjectRequest.builder()
                 .bucket(S3Config.IMPORT_BUCKET_NAME)
                 .key(s3Object.getKey())
                 .build());
         var inputStreamReader = new InputStreamReader(inputStream, UTF_8);
-        productParser.parse(inputStreamReader, logger);
+        return productParser.parse(inputStreamReader, logger);
+    }
+
+    private void sendToQueue(List<ProductAvailable> products, LambdaLogger logger) {
+        productMessageSender.sendByBatches(products, BATCH_SIZE, logger);
     }
 }

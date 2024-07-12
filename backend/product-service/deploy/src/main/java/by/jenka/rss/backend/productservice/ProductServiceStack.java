@@ -1,5 +1,7 @@
 package by.jenka.rss.backend.productservice;
 
+import by.jenka.rss.backend.productservice.config.AwsConfig;
+import by.jenka.rss.backend.productservice.sdk.task2.Utils;
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awscdk.*;
 import software.amazon.awscdk.services.apigateway.*;
@@ -16,10 +18,15 @@ import software.amazon.awscdk.services.lambda.AssetCode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.deployment.BucketDeployment;
 import software.amazon.awscdk.services.s3.deployment.Source;
+import software.amazon.awscdk.services.sns.NumericConditions;
+import software.amazon.awscdk.services.sns.SubscriptionFilter;
+import software.amazon.awscdk.services.sns.Topic;
+import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
 import java.util.ArrayList;
@@ -34,7 +41,7 @@ public class ProductServiceStack extends Stack {
     private static final String WEB_APP_RESOURCES = "./build/resources/main/static";
     private static final String GET_ALL_PRODUCTS = "GetProducts";
     private static final String GET_PRODUCT_BY_ID = "GetProductsById";
-    private static final String POST_PRODUCT = "PostProducts";
+    private static final String POST_PRODUCTS = "PostProducts";
 
     private static final String RSS_PRODUCT_GATEWAY_API = "RSS-cloud-product-automated-api";
     private static final String AWS_CLOUDFRONT_URL = "cloudfront.amazonaws.com";
@@ -44,10 +51,12 @@ public class ProductServiceStack extends Stack {
     private static final String OAI_ID = "OAI-for-FE-hosting-in-S3";
     private static final Map<String, String> lambdaEnvMap = new HashMap<>(Map.of("ENV", "PROD"));
     private static final Duration TWENTY_SEC = Duration.seconds(20);
+    private static final String CREATE_PRODUCT_TOPIC_ARN = "CREATE_PRODUCT_TOPIC_ARN";
 
     private Function getProductsHandler;
     private Function getProductByIdHandler;
     private Function postProductHandler;
+    private Function catalogBatchProcessHandler;
 
     private Bucket feS3Hosting;
     private OriginAccessIdentity oai;
@@ -55,6 +64,8 @@ public class ProductServiceStack extends Stack {
     private Table productTable;
     private Table stockTable;
 
+    private Queue catalogItemsQueue;
+    private Topic createProductTopic;
 
     public ProductServiceStack(@Nullable Construct scope, @Nullable String id, @Nullable StackProps props) {
         super(scope, id, props);
@@ -139,8 +150,8 @@ public class ProductServiceStack extends Stack {
         return this;
     }
 
-    public ProductServiceStack createApiGateway() {
-        System.out.println("Create createApiGateway");
+    public ProductServiceStack createProductApiGateway() {
+        System.out.println("Create Product Api Gateway");
         var api = ApiGateway.Builder.create(
                         RestApi.Builder
                                 .create(this, "RssProductGatewayApi")
@@ -178,7 +189,7 @@ public class ProductServiceStack extends Stack {
         addCorsOptions(productById);
 
         CfnOutput.Builder.create(this, "product-ui").value(feDistribution.getDistributionDomainName()).build();
-        System.out.println("Created createApiGateway");
+        System.out.println("Created Product Api Gateway");
         return this;
     }
 
@@ -216,9 +227,9 @@ public class ProductServiceStack extends Stack {
 
     public ProductServiceStack createPostProductLambda() {
         System.out.println("Create CreateProduct lambda from DynamoDB");
-        postProductHandler = Function.Builder.create(this, POST_PRODUCT)
+        postProductHandler = Function.Builder.create(this, POST_PRODUCTS)
                 .description("Created via java cdk")
-                .functionName("postProductFromDbHandler")
+                .functionName("postProducts")
                 .code(LAMBDA_JAR)
                 .handler("by.jenka.rss.productservice.lambda.handler.PostProductHandler")
                 .runtime(Runtime.JAVA_17)
@@ -227,6 +238,30 @@ public class ProductServiceStack extends Stack {
                 .environment(lambdaEnvMap)
                 .build();
         System.out.println("Created PostProductFromDbHandler lambda");
+        return this;
+    }
+
+    public ProductServiceStack createCatalogBatchProcessLambda() {
+        System.out.println("Create CatalogBatchProcess lambda");
+        catalogBatchProcessHandler = Function.Builder.create(this, "CatalogBatchProcessor")
+                .description("Created via java cdk. Task 6")
+                .functionName("catalogBatchProcess")
+                .code(LAMBDA_JAR)
+                .handler("by.jenka.rss.productservice.lambda.handler.CatalogBatchProcessHandler")
+                .runtime(Runtime.JAVA_17)
+                .memorySize(512)
+                .timeout(TWENTY_SEC)
+                .environment(lambdaEnvMap)
+                .events(
+                        List.of(SqsEventSource.Builder.create(catalogItemsQueue)
+                                .batchSize(5)
+                                .enabled(true)
+                                .maxBatchingWindow(Duration.seconds(5))
+                                .build()
+                        )
+                )
+                .build();
+        System.out.println("Created CatalogBatchProcess lambda");
         return this;
     }
 
@@ -267,12 +302,68 @@ public class ProductServiceStack extends Stack {
     }
 
     public ProductServiceStack grantFullAccessToDbForLambdas() {
-        List<Function> allDbFunctions = List.of(getProductByIdHandler, getProductsHandler, postProductHandler);
+        List<Function> allDbFunctions = List.of(getProductByIdHandler, getProductsHandler, postProductHandler, catalogBatchProcessHandler);
         allDbFunctions.forEach(f -> {
                     productTable.grantFullAccess(f);
                     stockTable.grantFullAccess(f);
                 }
         );
+        return this;
+    }
+
+    public ProductServiceStack createCatalogItemsSqs() {
+        System.out.println("Create Catalog Items SQS");
+        catalogItemsQueue = Queue.Builder.create(this, "RssCatalogItemsQueue")
+                .queueName("catalogItemsQueue")
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .visibilityTimeout(Duration.seconds(1))
+                .build();
+        System.out.println("Created Catalog Items SQS");
+        return this;
+    }
+
+    public ProductServiceStack createProductTopic() {
+        System.out.println("Create createProductTopic SNS");
+        createProductTopic = Topic.Builder.create(this, "RssCreateProductTopic")
+                .displayName("RssCreateProductTopic")
+                .topicName("createProductTopic")
+                .build();
+
+//        notify all
+        Utils.convertToEmailSubscriptions(AwsConfig.getCreateProductNotificationEmails()).forEach(
+                createProductTopic::addSubscription
+        );
+
+//        With FilterPolicy
+        var emailsForFilter = AwsConfig.getCreateSpecialProductNotificationEmails();
+        var priceGreaterThan100 = Map.of(
+                "price", SubscriptionFilter.numericFilter(
+                        NumericConditions.builder()
+                                .greaterThan(100)
+                                .build()
+                )
+        );
+        Utils.convertToEmailSubscriptions(emailsForFilter, priceGreaterThan100)
+                .forEach(createProductTopic::addSubscription);
+        lambdaEnvMap.put(CREATE_PRODUCT_TOPIC_ARN, createProductTopic.getTopicArn());
+        System.out.println("Created createProductTopic SNS");
+        return this;
+    }
+
+    public ProductServiceStack grantPermissionsToMessagingProcessing() {
+        System.out.println("Grand permissions for publishing and consuming");
+        catalogItemsQueue.grantConsumeMessages(catalogBatchProcessHandler);
+
+        createProductTopic.grantPublish(catalogBatchProcessHandler);
+        System.out.println("Permissions granted for publishing and consuming");
+        return this;
+    }
+
+    public ProductServiceStack outputStackVariables() {
+        CfnOutput.Builder.create(this, "CatalogItemsQueueTopicArn")
+                .exportName("CatalogItemsQueueTopicArn")
+                .value(catalogItemsQueue.getQueueArn())
+                .build();
         return this;
     }
 

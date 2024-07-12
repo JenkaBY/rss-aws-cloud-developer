@@ -16,6 +16,6 @@ export const environment: Config = {
     bff: false,
     cart: false,
   },
-  accessibleUrl: "https://d1dkpi5wt9dvqq.cloudfront.net/",
-  taskIdentification: 'Task 5. Turn the import-files-api on. Deployed via Java CDK.'
+  accessibleUrl: "https://d1hxiyo0kk0n80.cloudfront.net/",
+  taskIdentification: 'Task 6. Async communication. Deployed via Java CDK.'
 };

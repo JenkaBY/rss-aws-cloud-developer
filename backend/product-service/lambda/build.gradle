@@ -17,6 +17,7 @@ dependencies {
     implementation libs.aws.dynamodb
     implementation libs.aws.dynamodb.enhanced
     implementation libs.aws.dynamodb.local
+    implementation libs.aws.sns
 
     implementation libs.jackson.jr
 

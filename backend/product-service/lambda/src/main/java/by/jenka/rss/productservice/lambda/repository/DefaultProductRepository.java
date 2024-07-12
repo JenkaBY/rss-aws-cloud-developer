@@ -41,6 +41,8 @@ public class DefaultProductRepository implements ProductRepository {
 
     @Override
     public Product upsert(Product input) {
+        System.out.println("Persisting product %s".formatted(input));
+
         var productId = input.getId();
         Callable<Product> upsertProduct;
         if (productId == null) {
