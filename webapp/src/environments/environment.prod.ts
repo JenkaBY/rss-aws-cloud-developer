@@ -17,5 +17,5 @@ export const environment: Config = {
     cart: false,
   },
   accessibleUrl: "https://d1hxiyo0kk0n80.cloudfront.net/",
-  taskIdentification: 'Task 6. Async communication. Deployed via Java CDK.'
+  taskIdentification: 'Task 7. Basic Authorizer. Deployed via Java CDK.'
 };
