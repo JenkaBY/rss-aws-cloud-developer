@@ -23,12 +23,13 @@ node {
 
 tasks.register('buildNestjsApp', NpxTask) {
     dependsOn clean, npmInstall
-    command = 'nest'
-    args = ['build']
+    command = 'npm'
+    args = ['run','build-lambda']
     inputs.files(
             'package.json',
             'package-lock.json',
             'nest-cli.json',
+            'webpack.config.js',
             'tsconfig.json',
             'tsconfig.build.json')
     inputs.dir('src')
