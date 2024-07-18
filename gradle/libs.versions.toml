@@ -22,6 +22,8 @@ json-path = '2.9.0'
 opencsv = '5.9'
 system-stub = "2.1.6"
 dotenv-java='3.0.0'
+postgres = '42.7.3'
+liquibase = '4.28.0'
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -36,6 +38,8 @@ mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version 
 jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
 jackson-jr = { group = "com.fasterxml.jackson.jr", name = "jackson-jr-all", version.ref = "jackson-jr-all" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgres"}
+liquibase-core = { group = "org.liquibase", name = "liquibase-core", version.ref = "liquibase"}
 
 # AWS deps
 aws-s3 = { group = "software.amazon.awssdk", name = "s3", version.ref = "aws" }

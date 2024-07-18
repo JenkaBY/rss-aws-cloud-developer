@@ -5,6 +5,7 @@
 dynamodb-local-metadata.json
 .env.*
 !.env.example
+!backend/cart-service/lambda-dbchangelog/src/main/resources/.env.local-db-credentials
 # Ignore Gradle build output directory
 build
 app/src/main/resources/static

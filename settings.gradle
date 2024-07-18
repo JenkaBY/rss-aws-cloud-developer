@@ -20,5 +20,6 @@ include('webapp',
         ':backend:cart-service',
         ':backend:cart-service:deploy',
         ':backend:cart-service:lambda',
+        ':backend:cart-service:lambda-dbchangelog',
 )
 

@@ -1,0 +1,46 @@
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'by.jenka.rss.backend.cartservice'
+version = ''
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation libs.aws.lambda.core
+    implementation libs.aws.lambda.events
+    implementation libs.liquibase.core
+    implementation libs.postgresql
+    implementation libs.dotenv.java
+
+    implementation libs.jackson.jr
+
+//     Test
+    testImplementation libs.aws.lambda.test
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.jsonpath
+
+    testImplementation libs.system.stub.core
+    testImplementation libs.system.stub.jupiter
+}
+
+test {
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveVersion = ''
+    archiveBaseName = 'lambda-changelog'
+}
+
+build.dependsOn shadowJar
