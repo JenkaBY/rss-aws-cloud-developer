@@ -1,7 +1,10 @@
 package by.jenka.rss.backend.cartservice;
 
+import by.jenka.rss.backend.cartservice.config.AwsConfig;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.AppProps;
+import software.amazon.awscdk.Environment;
+import software.amazon.awscdk.StackProps;
 
 import java.util.Map;
 
@@ -16,9 +19,19 @@ public class TaskRunner {
                         Map.entry("school", "RSS")
                 ))
                 .build());
-        new CartServiceStack(app, CART_SERVICE_STACK_NAME)
+        var props = StackProps.builder()
+                .env(Environment.builder()
+                        .account(AwsConfig.DEFAULT_ACCOUNT)
+                        .region(AwsConfig.DEFAULT_REGION)
+                        .build())
+                .build();
+        new CartServiceStack(app, CART_SERVICE_STACK_NAME, props)
+                .loadEnvVariables()
+                .initPostgresDb()
                 .createCartApiLambda()
-                .createApiGateway();
+                .createApiGateway()
+                .grantPermissions()
+                .outputVariables();
 
         app.synth();
         System.out.println("---------------  End app");

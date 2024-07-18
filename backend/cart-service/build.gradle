@@ -1,0 +1,29 @@
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
+
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
+    }
+
+    test {
+        jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+        useJUnitPlatform()
+    }
+
+}

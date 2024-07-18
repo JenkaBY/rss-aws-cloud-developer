@@ -8,12 +8,14 @@ repositories {
     mavenLocal()
 }
 
+group = "by.jenka.rss.backend.cartservice"
 
 dependencies {
     implementation libs.aws.cdk.lib
     implementation libs.dotenv.java
+    implementation libs.jackson.jr
 
-    implementation project(':backend:authorization-service:lambda')
+    implementation project(':backend:cart-service:lambda')
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
