@@ -2,22 +2,22 @@ package by.jenka.rss.backend.importservice;
 
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awscdk.*;
-import software.amazon.awscdk.services.apigateway.LambdaIntegration;
-import software.amazon.awscdk.services.apigateway.MethodOptions;
-import software.amazon.awscdk.services.apigateway.RestApi;
+import software.amazon.awscdk.services.apigateway.IResource;
+import software.amazon.awscdk.services.apigateway.*;
 import software.amazon.awscdk.services.events.targets.ApiGateway;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.lambda.AssetCode;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.lambda.eventsources.S3EventSource;
 import software.amazon.awscdk.services.s3.*;
 import software.amazon.awscdk.services.sqs.IQueue;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.constructs.Construct;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +36,7 @@ public class ImportServiceStack extends Stack {
 
     private Function importFileParserHandler;
     private Function importProductsFileHandler;
+    private IFunction basicAuthorizerHandler;
     private Bucket importFilesBucket;
     private IQueue catalogItemsQueue;
 
@@ -164,35 +165,76 @@ public class ImportServiceStack extends Stack {
                                 .create(this, "ImportFilesApiGateway")
                                 .description("Created by java cdk. It's a import files API (Task 5)")
                                 .restApiName("RSS-import-files-api-gateway")
-//                                .cloudWatchRole(true)
-//                                .cloudWatchRoleRemovalPolicy(RemovalPolicy.DESTROY)
+                                .defaultCorsPreflightOptions(
+                                        CorsOptions.builder()
+                                                .allowOrigins(Cors.ALL_ORIGINS)
+                                                .allowMethods(Cors.ALL_METHODS)
+                                                .allowHeaders(Cors.DEFAULT_HEADERS)
+                                                .build()
+                                )
                                 .build())
                 .build();
 
         var root = api.getIRestApi().getRoot();
-        var products = root.addResource("import");
+        var importResource = root.addResource("import");
 
-        products.addMethod("GET",
+        var apiGatewayServiceRole = Role.Builder.create(this, "ApiGatewayServiceRole")
+                .assumedBy(new ServicePrincipal("apigateway.amazonaws.com"))
+                .build();
+        var basicAuthorizer = RequestAuthorizer.Builder.create(this, "basicAuthRequestAuthorizer")
+                .authorizerName("BasicAuthRequestAuthorizer")
+                .handler(basicAuthorizerHandler)
+                .identitySources(
+                        List.of(
+                                IdentitySource.header("Authorization")
+                        ))
+                .resultsCacheTtl(Duration.seconds(0))
+                .assumeRole(apiGatewayServiceRole)
+                .build();
+
+        importResource.addMethod("GET",
                 LambdaIntegration.Builder
                         .create(importProductsFileHandler)
                         .timeout(TWENTY_SEC)
                         .build(),
                 MethodOptions.builder()
-                        .requestParameters(Map.of("method.request.querystring.name", true))
+                        .requestParameters(Map.of(
+                                "method.request.querystring.name", true,
+                                "method.request.header.Authorization", false
+                        ))
+                        .authorizer(basicAuthorizer)
+                        .authorizationType(AuthorizationType.CUSTOM)
+                        .methodResponses(
+                                List.of(
+                                        MethodResponse.builder()
+                                                .statusCode("403")
+                                                .responseModels(Map.of("application/json", Model.ERROR_MODEL))
+                                                .responseParameters(getCorsResponseParams())
+                                                .build(),
+                                        MethodResponse.builder()
+                                                .statusCode("401")
+                                                .responseModels(Map.of("application/json", Model.ERROR_MODEL))
+                                                .responseParameters(getCorsResponseParams())
+                                                .build()
+                                )
+                        )
                         .build()
         );
-
-//        var importFileDeployment = Deployment.Builder.create(this, "RSS-import-file-api-deployment")
-//                .api(api.getIRestApi())
-//                .description("Created from Java CDK for RSS-import-files-api")
-//                .build();
-//
-//        var prodStage = Stage.Builder.create(this, "RSS-import-file-api-DEV-stage")
-//                .stageName("dev")
-//                .description("Created from Java CDK for import-file-api-DEV-stage")
-//                .deployment(importFileDeployment)
-//                .build();
-
+//        This allows to handle properly CORS requests on a client's side. Otherwise, status on the client is 0
+        var default4xxRss = GatewayResponse.Builder.create(this, "DEFAULT_4xx_RSS")
+                .restApi(importResource.getApi())
+                .type(ResponseType.DEFAULT_4_XX)
+                .responseHeaders(
+                        Map.of("Access-Control-Allow-Origin", "'*'")
+                )
+                .build();
+        var default5xxRss = GatewayResponse.Builder.create(this, "DEFAULT_5xx_RSS")
+                .restApi(importResource.getApi())
+                .type(ResponseType.DEFAULT_5_XX)
+                .responseHeaders(
+                        Map.of("Access-Control-Allow-Origin", "'*'")
+                )
+                .build();
         System.out.println("Created import-files apiGateway");
         return this;
     }
@@ -206,16 +248,59 @@ public class ImportServiceStack extends Stack {
     }
 
     public ImportServiceStack initCatalogItemsQueue() {
-        System.out.println("Init catalogItemsQueue");
+        System.out.println("Init external resources");
         var catalogItemsQueueTopicArn = Fn.importValue("CatalogItemsQueueTopicArn");
-        System.out.println("from Fn import catalogItemsQueueTopicArn " + catalogItemsQueueTopicArn);
         catalogItemsQueue = Queue.fromQueueArn(this, "CatalogItemsQueueTopic", catalogItemsQueueTopicArn);
-        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueName());
-        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueArn());
-        System.out.println("from Fn import catalogItemsQueue " + catalogItemsQueue.getQueueUrl());
         lambdaEnvMap.put("CATALOG_ITEM_QUEUE_TOPIC_URL", catalogItemsQueue.getQueueUrl());
-        System.out.println("Initialisation catalogItemsQueue completed");
 
+        var basicAuthorizerHandlerArn = Fn.importValue("BasicAuthFunctionArn");
+
+        basicAuthorizerHandler = Function.fromFunctionArn(this, "BasicAuthFunctionArn", basicAuthorizerHandlerArn);
+        System.out.println("Initialisation external resources completed");
         return this;
     }
+
+    private void addCorsOptions(IResource item) {
+        List<MethodResponse> methodResponses = new ArrayList<>();
+
+        Map<String, Boolean> responseParameters = getCorsResponseParams();
+        methodResponses.add(MethodResponse.builder()
+                .responseParameters(responseParameters)
+                .statusCode("200")
+                .build());
+        MethodOptions methodOptions = MethodOptions.builder()
+                .methodResponses(methodResponses)
+                .build();
+
+        Map<String, String> requestTemplate = new HashMap<>();
+        requestTemplate.put("application/json", "{\"statusCode\": 200}");
+        List<IntegrationResponse> integrationResponses = new ArrayList<>();
+
+        Map<String, String> integrationResponseParameters = new HashMap<>();
+        integrationResponseParameters.put("method.response.header.Access-Control-Allow-Headers", "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'");
+        integrationResponseParameters.put("method.response.header.Access-Control-Allow-Origin", "'*'");
+        integrationResponseParameters.put("method.response.header.Access-Control-Allow-Credentials", "'true'");
+        integrationResponseParameters.put("method.response.header.Access-Control-Allow-Methods", "'OPTIONS,GET,PUT,POST,DELETE'");
+        integrationResponses.add(IntegrationResponse.builder()
+                .responseParameters(integrationResponseParameters)
+                .statusCode("200")
+                .build());
+        Integration methodIntegration = MockIntegration.Builder.create()
+                .integrationResponses(integrationResponses)
+                .passthroughBehavior(PassthroughBehavior.NEVER)
+                .requestTemplates(requestTemplate)
+                .build();
+
+        item.addMethod("OPTIONS", methodIntegration, methodOptions);
+    }
+
+    private static Map<String, Boolean> getCorsResponseParams() {
+        Map<String, Boolean> responseParameters = new HashMap<>();
+        responseParameters.put("method.response.header.Access-Control-Allow-Headers", Boolean.TRUE);
+        responseParameters.put("method.response.header.Access-Control-Allow-Methods", Boolean.TRUE);
+        responseParameters.put("method.response.header.Access-Control-Allow-Credentials", Boolean.TRUE);
+        responseParameters.put("method.response.header.Access-Control-Allow-Origin", Boolean.TRUE);
+        return responseParameters;
+    }
+
 }

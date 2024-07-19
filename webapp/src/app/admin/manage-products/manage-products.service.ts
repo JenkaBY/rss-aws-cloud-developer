@@ -1,7 +1,7 @@
-import { Injectable, Injector } from '@angular/core';
-import { EMPTY, Observable } from 'rxjs';
-import { ApiService } from '../../core/api.service';
-import {map, switchMap} from 'rxjs/operators';
+import {Injectable, Injector} from '@angular/core';
+import {EMPTY, Observable} from 'rxjs';
+import {ApiService} from '../../core/api.service';
+import {switchMap} from 'rxjs/operators';
 import {PreSignedUrl} from "../../core/signed-url.interface";
 
 @Injectable()
@@ -35,10 +35,17 @@ export class ManageProductsService extends ApiService {
   private getPreSignedUrl(fileName: string): Observable<PreSignedUrl> {
     const url = this.getUrl('import', 'import');
 
+    const authorizationToken = localStorage.getItem('authorization_token');
+    console.log(`Found token: ${authorizationToken}`);
+    let headersAuth: any = {};
+    if (authorizationToken) {
+      headersAuth["Authorization"] =`Basic ${authorizationToken}`;
+    }
     return this.http.get<PreSignedUrl>(url, {
       params: {
         name: fileName,
       },
+      headers: headersAuth
     });
   }
 }

@@ -21,12 +21,14 @@ mockito = '2.1.0'
 json-path = '2.9.0'
 opencsv = '5.9'
 system-stub = "2.1.6"
+dotenv-java='3.0.0'
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 
 spring-core = { module = "org.springframework:spring-core", version.ref = "spring" }
 open-csv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv"}
+dotenv-java = { module = "io.github.cdimascio:dotenv-java", version.ref = "dotenv-java" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }

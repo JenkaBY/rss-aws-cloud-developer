@@ -11,5 +11,11 @@ include('webapp',
         ':backend:product-service',
         ':backend:product-service:deploy',
         ':backend:product-service:lambda',
+        ':backend:product-service',
+        ':backend:product-service:deploy',
+        ':backend:product-service:lambda',
+        ':backend:authorization-service',
+        ':backend:authorization-service:deploy',
+        ':backend:authorization-service:lambda'
 )
 

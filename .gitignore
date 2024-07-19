@@ -3,6 +3,8 @@
 .idea
 .vscode
 dynamodb-local-metadata.json
+.env.*
+!.env.example
 # Ignore Gradle build output directory
 build
 app/src/main/resources/static
