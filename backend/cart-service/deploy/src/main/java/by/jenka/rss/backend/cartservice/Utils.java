@@ -1,5 +1,6 @@
 package by.jenka.rss.backend.cartservice;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import software.amazon.awscdk.services.apigateway.*;
 
 import java.util.ArrayList;
@@ -9,6 +10,15 @@ import java.util.Map;
 
 public class Utils {
 
+    public static Map<String, String> loadEnv() {
+        var env = new HashMap<String, String>();
+        var dotenv = Dotenv.configure()
+                .filename(".env.db-credentials")
+                .load();
+        dotenv.entries(Dotenv.Filter.DECLARED_IN_ENV_FILE).stream()
+                .forEach(e -> env.put(e.getKey(), e.getValue()));
+        return env;
+    }
 
     public static void addCorsOptions(IResource item) {
         List<MethodResponse> methodResponses = new ArrayList<>();

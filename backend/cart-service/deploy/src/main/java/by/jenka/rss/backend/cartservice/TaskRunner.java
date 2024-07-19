@@ -28,6 +28,7 @@ public class TaskRunner {
         new CartServiceStack(app, CART_SERVICE_STACK_NAME, props)
                 .loadEnvVariables()
                 .initPostgresDb()
+                .createAndTriggerDbChangelogLambda()
                 .createCartApiLambda()
                 .createApiGateway()
                 .grantPermissions()

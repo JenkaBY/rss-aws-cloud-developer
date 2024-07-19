@@ -40,7 +40,7 @@ test {
 
 shadowJar {
     archiveVersion = ''
-    archiveBaseName = 'lambda-changelog'
+    archiveBaseName = 'lambda-dbchangelog'
 }
 
 build.dependsOn shadowJar

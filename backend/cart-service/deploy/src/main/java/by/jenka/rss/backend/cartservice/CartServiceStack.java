@@ -1,6 +1,5 @@
 package by.jenka.rss.backend.cartservice;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +14,7 @@ import software.amazon.awscdk.services.lambda.AssetCode;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.rds.*;
+import software.amazon.awscdk.triggers.TriggerFunction;
 import software.constructs.Construct;
 
 import java.util.HashMap;
@@ -27,6 +27,7 @@ public class CartServiceStack extends Stack {
     private static final @NotNull Duration TWENTY_SECONDS = Duration.seconds(20);
     private static final Map<String, String> lambdaEnvMap = new HashMap<>(Map.of("ENV", "PROD"));
     private Function cartApiHandler;
+    private TriggerFunction cartServiceDbChangelogHandler;
     private DataSource dataSource;
     private DatabaseInstance postgresInstance;
 
@@ -60,6 +61,25 @@ public class CartServiceStack extends Stack {
                 .build();
         return this;
     }
+
+    public CartServiceStack createAndTriggerDbChangelogLambda() {
+        System.out.println("Creating DB Changlelog lambda");
+
+        cartServiceDbChangelogHandler = TriggerFunction.Builder.create(this, "CartServiceDbChangeLogHandler")
+                .description("Created via java cdk. Task 8")
+                .functionName("cartServiceDbChangeLogHandler")
+                .code(AssetCode.fromAsset("../lambda-dbchangelog/build/libs/lambda-dbchangelog-all.jar"))
+                .handler("by.jenka.rss.backend.cartservice.changelog.ChangelogHandler")
+                .runtime(Runtime.JAVA_17)
+                .memorySize(256)
+                .timeout(TWENTY_SECONDS)
+                .environment(lambdaEnvMap)
+                .build();
+        cartServiceDbChangelogHandler.executeAfter(postgresInstance);
+        postgresInstance.grantConnect(cartServiceDbChangelogHandler, dataSource.getUser());
+        return this;
+    }
+
 
     public CartServiceStack createApiGateway() {
         System.out.println("Create Cart Service Api Gateway");
@@ -101,9 +121,6 @@ public class CartServiceStack extends Stack {
         var id = "postgres-db-rss";
 //                FIXME. Avoid passing a raw password and user.
         var credentials = Credentials.fromPassword(dataSource.getUser(), SecretValue.unsafePlainText(dataSource.getRawPassword()));
-        var test = Credentials.fromPassword(dataSource.getUser(), SecretValue.unsafePlainText(dataSource.getRawPassword()));
-        System.out.println("Credentials raw:" + test);
-        System.out.println("Credentials pass raw " + test.getPassword().unsafeUnwrap());
 
         var defaultVpc = Vpc.fromLookup(this, "rss-rds-VPC", VpcLookupOptions.builder()
                 .isDefault(true)
@@ -114,7 +131,7 @@ public class CartServiceStack extends Stack {
                 .securityGroupName("rss-rds-sec-group")
                 .build();
 
-        securityGroupPgWithPublicAccess.addIngressRule(Peer.anyIpv4(), Port.POSTGRES,"PostgresOnly");
+        securityGroupPgWithPublicAccess.addIngressRule(Peer.anyIpv4(), Port.POSTGRES, "PostgresOnly");
         securityGroupPgWithPublicAccess.getConnections().allowFromAnyIpv4(Port.POSTGRES);
 
         postgresInstance = DatabaseInstance.Builder.create(this, id)
@@ -156,11 +173,7 @@ public class CartServiceStack extends Stack {
 
     public CartServiceStack loadEnvVariables() {
         System.out.println("Load env variables");
-        var dotenv = Dotenv.configure()
-                .filename(".env.db-credentials")
-                .load();
-        dotenv.entries(Dotenv.Filter.DECLARED_IN_ENV_FILE).stream()
-                .forEach(e -> lambdaEnvMap.put(e.getKey(), e.getValue()));
+        lambdaEnvMap.putAll(Utils.loadEnv());
         dataSource = new DataSource(lambdaEnvMap);
         System.out.println("Datasource: " + dataSource);
         return this;

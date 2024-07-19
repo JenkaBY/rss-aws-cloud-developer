@@ -16,6 +16,7 @@ dependencies {
     implementation libs.jackson.jr
 
     implementation project(':backend:cart-service:lambda')
+    implementation project(':backend:cart-service:lambda-dbchangelog')
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
@@ -40,3 +41,4 @@ tasks.named('test') {
 }
 
 processResources.dependsOn ':backend:cart-service:lambda:buildNestjsApp'
+run.dependsOn ':backend:cart-service:lambda-dbchangelog:shadowJar'
