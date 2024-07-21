@@ -1,10 +1,10 @@
-import {CartItem} from '../../cart/models';
+import { CartItemDTO } from '../../cart/models';
 
 export type Order = {
   id?: string,
   userId: string;
   cartId: string;
-  items: CartItem[]
+  items: CartItemDTO[]
   payment: {
     type: string,
     address?: any,
