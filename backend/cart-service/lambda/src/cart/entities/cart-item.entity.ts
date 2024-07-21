@@ -7,7 +7,9 @@ export class CartItem {
   @PrimaryColumn({ type: 'uuid' })
   cart_id: string;
 
-  @ManyToOne(() => Cart, (cart) => cart.items,)
+  @ManyToOne(
+    () => Cart,
+    (cart) => cart.items,)
   @JoinColumn({ name: 'cart_id' })
   cart: Cart;
 
@@ -18,7 +20,7 @@ export class CartItem {
   count: number;
 
   @Column({ type: 'jsonb' })
-  product: Product
+  product: Product;
 
   static from(source: Partial<CartItemDTO>, cart_id: string) {
     const item = new CartItem();

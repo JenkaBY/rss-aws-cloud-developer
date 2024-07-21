@@ -25,7 +25,7 @@ export class Cart {
     {
       cascade: ['insert', 'update', 'remove'],
       orphanedRowAction: 'delete',
-      eager: true
+      eager: true,
     })
   items: CartItem[];
 }

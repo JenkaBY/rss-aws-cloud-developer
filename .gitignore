@@ -3,7 +3,7 @@
 .idea
 .vscode
 dynamodb-local-metadata.json
-.env.*
+.env*
 !.env.example
 !backend/cart-service/lambda-dbchangelog/src/main/resources/.env.local-db-credentials
 # Ignore Gradle build output directory

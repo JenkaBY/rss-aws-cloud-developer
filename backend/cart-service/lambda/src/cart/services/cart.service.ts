@@ -117,10 +117,13 @@ export class CartService {
   }
 
   async _removeByUserId(userId: string): Promise<void> {
-    // FIXME doesn't work
     await this.cartRepo.findOneBy({
       user_id: userId,
       status: CartStatus.OPEN,
-    }).then(entity => this.cartRepo.remove(entity));
+    }).then(cart =>
+      this.cartRepo.manager.transaction(async (entityManager) => {
+        await entityManager.remove(CartItem, cart.items);
+        await entityManager.remove(Cart, cart);
+      }));
   }
 }

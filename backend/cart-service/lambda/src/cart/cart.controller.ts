@@ -51,7 +51,7 @@ export class CartController {
   // @UseGuards(BasicAuthGuard)
   @Delete()
   async clearUserCart(@Req() req: AppRequest) {
-    this.cartService._removeByUserId(getUserIdFromRequest(req));
+    await this.cartService._removeByUserId(getUserIdFromRequest(req));
 
     return {
       statusCode: HttpStatus.OK,
