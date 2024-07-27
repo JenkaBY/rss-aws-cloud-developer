@@ -6,5 +6,6 @@
 
     <include relativeToChangelogFile="true" file="v1/create-cart-related-tables.xml"/>
     <include relativeToChangelogFile="true" file="v1/create-orders-table.xml"/>
+    <include relativeToChangelogFile="true" file="v1/create-users-table.xml"/>
     <include relativeToChangelogFile="true" file="v1/populate-cart-related-tables.xml"/>
 </databaseChangeLog>
