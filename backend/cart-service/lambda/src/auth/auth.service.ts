@@ -1,51 +1,45 @@
-import {Injectable} from '@nestjs/common';
-import {JwtService} from '@nestjs/jwt';
-import {UsersService} from '../users/services/users.service';
-import {User} from '../users/models';
+import { Injectable } from '@nestjs/common';
+import { UserDto, UsersService } from '../users';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService
-  ) {}
-
-  validateUser(name: string, password: string): any {
-    const user = this.usersService.findOne(name);
-
-    if (user) {
-      return user;
-    }
-
-    return this.usersService.createOne({ name, password })
+  constructor(private readonly usersService: UsersService) {
   }
 
-  login(user: User, type) {
-    const LOGIN_MAP = {
-      jwt: this.loginJWT,
-      basic: this.loginBasic,
-      default: this.loginJWT,
+  async verifyUser(name: string, pass: string): Promise<UserDto> {
+    console.log("verify user ", name)
+    const user = await this.usersService.findOne(name);
+    console.log('found user ', user);
+    if (user && user.password === pass) {
+      return user;
     }
-    const login = LOGIN_MAP[ type ]
+  }
+
+  async validateUser(name: string, pass: string): Promise<UserDto> {
+    const user = await this.usersService.findOne(name);
+    if (user) {
+      if (user.password !== pass) {
+        return null;
+      }
+      return user;
+    }
+    return await this.usersService.createOne({ name, password: pass });
+  }
+
+  login(user: UserDto, type: 'basic' | 'default' | 'bearer') {
+    const LOGIN_MAP = {
+      basic: this.loginBasic,
+      default: this.loginBasic,
+    };
+    const login = LOGIN_MAP[type];
 
     return login ? login(user) : LOGIN_MAP.default(user);
   }
 
-  loginJWT(user: User) {
-    const payload = { username: user.name, sub: user.id };
-
-    return {
-      token_type: 'Bearer',
-      access_token: this.jwtService.sign(payload),
-    };
-  }
-
-  loginBasic(user: User) {
-    // const payload = { username: user.name, sub: user.id };
-    console.log(user);
-
+  loginBasic(user: UserDto) {
     function encodeUserToken(user) {
-      const { id, name, password } = user;
+      const { name, password } = user;
+      console.log("enc ", name, password)
       const buf = Buffer.from([name, password].join(':'), 'utf8');
 
       return buf.toString('base64');
@@ -56,7 +50,6 @@ export class AuthService {
       access_token: encodeUserToken(user),
     };
   }
-
 
 
 }
