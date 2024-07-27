@@ -12,7 +12,6 @@ export class CartService {
   private userCarts: Record<string, CartDTO> = {};
 
   constructor(@InjectRepository(Cart) private readonly cartRepo: Repository<Cart>,
-              @InjectRepository(CartItem) private readonly cartItemRepo: Repository<CartItem>,
   ) {
   }
 
@@ -96,17 +95,13 @@ export class CartService {
   async _updateByUserId(userId: string, { items }: CartDTO): Promise<CartDTO> {
     const cartDTO = this._findOrCreateByUserId(userId);
 
-    let toDeleteItems: CartItem[] = [];
-    console.log('Items to update', items);
     const updatedCart = cartDTO.then(cart => {
       const updatedItems = items.map(item => CartItem.from(item, cart.id));
-      toDeleteItems = cart.items.map(i => i.toEntity(cart.id));
       return { ...cart, ...{ items: updatedItems } } as Cart;
     });
     return this.cartRepo.manager.transaction(async entityManager => {
       const cart = await updatedCart;
       await entityManager.delete(CartItem, { cart_id: cart.id });
-      console.log('Cart to update ', cart);
       const saved = await entityManager.save(Cart, cart);
       return CartDTO.fromEntity(saved);
     });

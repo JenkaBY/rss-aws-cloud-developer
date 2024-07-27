@@ -1,20 +1,25 @@
-import { CartItemDTO } from '../../cart/models';
+import { CartItemDTO } from '../../cart';
 
-export type Order = {
-  id?: string,
+export class OrderDTO {
+  id?: string;
   userId: string;
   cartId: string;
-  items: CartItemDTO[]
-  payment: {
-    type: string,
-    address?: any,
-    creditCard?: any,
-  },
-  delivery: {
-    type: string,
-    address: any,
-  },
-  comments: string,
-  status: string;
+  items: CartItemDTO[];
+  delivery: Delivery;
+  status: OrderStatus;
   total: number;
+}
+
+export enum OrderStatus {
+  CREATED = 'CREATED',
+  SHIPPED = 'SHIPPED',
+}
+export type Delivery = {
+  type: string;
+  comments: string;
+};
+
+export class OrderInputDto {
+
+  delivery: Delivery;
 }

@@ -5,8 +5,7 @@ import { CartDTO, CartItemDTO } from '../models';
  * @returns {number}
  */
 export function calculateCartTotal(cart: CartDTO): number {
-  console.log("Calculate Cart Total: ", cart)
-  return cart ? cart.items.reduce((acc: number, { product: { price }, count }: CartItemDTO) => {
+  return cart ? +Number.parseFloat('' + cart.items.reduce((acc: number, { product: { price }, count }: CartItemDTO) => {
     return acc += price * count;
-  }, 0) : 0;
+  }, 0)).toFixed(2) : 0;
 }

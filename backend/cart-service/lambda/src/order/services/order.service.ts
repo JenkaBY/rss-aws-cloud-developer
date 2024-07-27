@@ -1,39 +1,55 @@
-import {Injectable} from '@nestjs/common';
-import {v4} from 'uuid';
+import { Injectable } from '@nestjs/common';
+import { v4 } from 'uuid';
 
-import {Order} from '../models';
+import { OrderDTO, OrderStatus } from '../models';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { Order } from '../entities/order.entity';
+import { calculateCartTotal } from '../../cart/models-rules';
+import { Cart, CartStatus } from '../../cart';
 
 @Injectable()
 export class OrderService {
-  private orders: Record<string, Order> = {}
+  private entityManager: EntityManager;
 
-  findById(orderId: string): Order {
-    return this.orders[ orderId ];
+  constructor(@InjectRepository(Order) private readonly orderRepo: Repository<Order>) {
+    this.entityManager = orderRepo.manager;
   }
 
-  create(data: any) {
-    const id = v4()
-    const order = {
-      ...data,
-      id,
-      status: 'inProgress',
-    };
+  async checkout(data: any): Promise<OrderDTO> {
+    console.log('Checkout Service checkout input', data);
+    const { userId, cart, delivery } = data;
+    const { id: cartId, items } = cart;
+    const total = calculateCartTotal(cart);
 
-    this.orders[ id ] = order;
+    const order = await this.entityManager.transaction(async entityManager => {
+      const order = {
+        id: v4(),
+        userId,
+        delivery,
+        total,
+        comments: delivery.comments,
+        cart: {
+          id: cartId,
+        } as Partial<Cart>,
+        status: OrderStatus.CREATED,
+      } as Order;
+      const orderDto = await entityManager.save(Order, order)
+        .then(created => {
+          return { ...created, items, cartId: created.cart.id, userId, total: created.total } as OrderDTO;
+        });
 
+      await entityManager.update(Cart,
+        {
+          id: cartId,
+        },
+        {
+          status: CartStatus.ORDERED,
+        });
+      return orderDto;
+    });
     return order;
   }
 
-  update(orderId, data) {
-    const order = this.findById(orderId);
 
-    if (!order) {
-      throw new Error('Order does not exist.');
-    }
-
-    this.orders[ orderId ] = {
-      ...data,
-      id: orderId,
-    }
-  }
 }
