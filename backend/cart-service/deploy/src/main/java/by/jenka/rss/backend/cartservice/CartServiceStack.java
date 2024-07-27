@@ -134,14 +134,24 @@ public class CartServiceStack extends Stack {
         securityGroupPgWithPublicAccess.addIngressRule(Peer.anyIpv4(), Port.POSTGRES, "PostgresOnly");
         securityGroupPgWithPublicAccess.getConnections().allowFromAnyIpv4(Port.POSTGRES);
 
+        var postgres15 = DatabaseInstanceEngine.postgres(
+                PostgresInstanceEngineProps.builder()
+                        .version(PostgresEngineVersion.VER_15)
+                        .build());
+//      TODO avoid this. Use SSL connection instead - https://stackoverflow.com/a/77586796
+        var parameterGroup = ParameterGroup.Builder.create(this, "postgres-15-parameter-group")
+                .name("rss-postgres-15-parameter-group")
+                .description("Disable ssl encryption")
+                .engine(postgres15)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .parameters(Map.of("rds.force_ssl", "0"))
+                .build();
         postgresInstance = DatabaseInstance.Builder.create(this, id)
-                .engine(DatabaseInstanceEngine.postgres(
-                        PostgresInstanceEngineProps.builder()
-                                .version(PostgresEngineVersion.VER_15)
-                                .build()))
+                .engine(postgres15)
                 .instanceIdentifier(id + "-01")
                 .databaseName(dataSource.getDbName())
                 .credentials(credentials)
+                .parameterGroup(parameterGroup)
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .instanceType(
                         InstanceType.of(
