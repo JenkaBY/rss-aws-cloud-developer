@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TlsOptions } from 'tls';
 
 
 require('dotenv').config();
@@ -39,7 +40,7 @@ class ConfigService {
       port: parseInt(this.getValue('PG_DBPORT')),
       username: this.getValue('PG_USER'),
       password: this.getValue('PG_PASSWORD'),
-      database: this.getValue('PG_DB_NAME'),
+      database: this.getValue('PG_DBNAME'),
 
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
 
@@ -50,10 +51,21 @@ class ConfigService {
       manualInitialization: false,
       logging: true,
       autoLoadEntities: true,
-      ssl: false,
+      ssl: this.getSslConfig(),
     };
   }
 
+  private getSslConfig(): boolean | TlsOptions {
+    // return this.isProduction() ? this.sslConfig(): false;
+    return false;
+  }
+
+  private sslConfig():TlsOptions {
+    return {
+      rejectUnauthorized: true,
+      // ca: fs.readFileSync('/pathto/rds-ca-cert.pem').toString(),
+    }
+  }
 }
 
 const configService = new ConfigService(process.env)
@@ -62,7 +74,7 @@ const configService = new ConfigService(process.env)
     'PG_DBPORT',
     'PG_USER',
     'PG_PASSWORD',
-    'PG_DB_NAME',
+    'PG_DBNAME',
   ]);
 
 export { configService };
