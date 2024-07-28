@@ -11,12 +11,13 @@ export class Product {
   title: string;
   description: string;
   price: number;
-};
+}
 
 
 export class CartItemDTO {
   product: Product;
   product_id: string;
+  cart_id: string;
   count: number;
 
   public static from(dto: Partial<CartItemDTO>): CartItemDTO {
@@ -24,6 +25,7 @@ export class CartItemDTO {
     it.product_id = dto.product_id;
     it.count = dto.count;
     it.product = dto.product;
+    it.cart_id = dto.cart_id;
     return it;
   }
 
@@ -35,6 +37,7 @@ export class CartItemDTO {
       product_id: source.product_id,
       count: source.count,
       product: source.product,
+      cart_id: source.cart_id,
     });
   }
 
