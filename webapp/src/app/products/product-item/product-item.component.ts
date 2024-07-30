@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { Product } from '../product.interface';
 import { CartService } from '../../cart/cart.service';
 import { Observable } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { shareReplay, tap } from 'rxjs/operators';
 import { CartCountControlsComponent } from '../../core/cart-count-controls/cart-count-controls.component';
 
 @Component({
@@ -30,14 +30,7 @@ export class ProductItemComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.countInCart$ = this.cartService.cart$.pipe(
-      map((cart) => {
-        if (!(this.id in cart)) {
-          return 0;
-        }
-
-        return cart[this.id];
-      }),
+    this.countInCart$ = this.cartService.totalInCart$.pipe(
       this.updateFocusIfNeeded(),
       shareReplay({
         bufferSize: 1,
@@ -47,11 +40,11 @@ export class ProductItemComponent implements OnInit {
   }
 
   add(): void {
-    this.cartService.addItem(this.id);
+    this.cartService.addItem(this.product);
   }
 
   remove(): void {
-    this.cartService.removeItem(this.id);
+    this.cartService.removeItem(this.product);
   }
 
   /** Move focus to a corresponding control when controls switch */

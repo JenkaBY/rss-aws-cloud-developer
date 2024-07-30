@@ -13,6 +13,7 @@ import { CartCountControlsModule } from '../core/cart-count-controls/cart-count-
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CartShippingFormComponent } from './cart-shipping-form/cart-shipping-form.component';
 import { OrderSummaryComponent } from './order-summary/order-summary.component';
+import { ProductsModule } from '../products/products.module';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { OrderSummaryComponent } from './order-summary/order-summary.component';
     MatInputModule,
     CartCountControlsModule,
     MatProgressSpinnerModule,
+    ProductsModule,
   ],
   exports: [CartComponent],
 })

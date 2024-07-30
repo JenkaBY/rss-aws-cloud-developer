@@ -3,8 +3,8 @@
 <ng-container>
   <app-product-item-checkout
     *ngFor="let product of products"
-    (add)="add.emit(product.id)"
-    (remove)="remove.emit(product.id)"
+    (add)="add.emit(product)"
+    (remove)="remove.emit(product)"
     [product]="product"
     [hideControls]="!showControls"
   ></app-product-item-checkout>

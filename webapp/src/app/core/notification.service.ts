@@ -19,4 +19,11 @@ export class NotificationService {
       panelClass: 'shop-snackbar-error',
     });
   }
+
+  showSuccess(text: string, duration = 3000) {
+    this.snackBar.open(text, 'Dismiss', {
+      duration,
+      panelClass: 'shop-snackbar-info',
+    });
+  }
 }

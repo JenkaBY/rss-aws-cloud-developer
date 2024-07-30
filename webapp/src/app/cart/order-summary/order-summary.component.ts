@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ProductCheckout } from '../../products/product.interface';
+import { Product, ProductCheckout } from '../../products/product.interface';
 
 @Component({
   selector: 'app-order-summary',
@@ -12,7 +12,7 @@ export class OrderSummaryComponent {
   @Input() totalPrice!: number;
 
   /** Add productId */
-  @Output() add = new EventEmitter<string>();
+  @Output() add = new EventEmitter<Product>();
   /** Remove productId */
-  @Output() remove = new EventEmitter<string>();
+  @Output() remove = new EventEmitter<Product>();
 }

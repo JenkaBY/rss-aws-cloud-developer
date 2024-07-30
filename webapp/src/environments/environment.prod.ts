@@ -19,5 +19,5 @@ export const environment: Config = {
     auth: true,
   },
   accessibleUrl: "https://d1hxiyo0kk0n80.cloudfront.net/",
-  taskIdentification: 'Task 8. Cart Service API. Postgres instance. Deployed via Java CDK.'
+  taskIdentification: 'Task 8. Cart Service API. Postgres instance has been deployed via Java CDK.'
 };
