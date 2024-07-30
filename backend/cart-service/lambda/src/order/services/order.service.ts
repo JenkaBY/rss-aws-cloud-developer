@@ -16,6 +16,12 @@ export class OrderService {
     this.entityManager = orderRepo.manager;
   }
 
+  async getOrders(): Promise<any[]> {
+    return await this.orderRepo.find({
+      order: { userId: 'ASC' },
+    });
+  }
+
   async checkout(data: any): Promise<OrderDTO> {
     console.log('Checkout Service checkout input', data);
     const { userId, cart, delivery } = data;
