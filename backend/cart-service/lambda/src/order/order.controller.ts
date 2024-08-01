@@ -1,6 +1,4 @@
-import { Controller, Get, HttpStatus, Req, UseGuards } from '@nestjs/common';
-
-import { BasicAuthGuard } from '../auth';
+import { Controller, Get, HttpStatus, Req } from '@nestjs/common';
 import { AppRequest } from '../shared';
 import { OrderService } from '../order';
 
@@ -12,7 +10,7 @@ export class OrderController {
   }
 
   // @UseGuards(JwtAuthGuard)
-  @UseGuards(BasicAuthGuard)
+  // @UseGuards(BasicAuthGuard)
   @Get()
   async getOrders(@Req() req: AppRequest) {
     console.log('request', req.body, req.headers);
