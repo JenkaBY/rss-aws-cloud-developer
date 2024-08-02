@@ -1,0 +1,22 @@
+#exclude a gradle folder and its build file. Folder with files managed by gradle, particulary there's a node installed
+build.gradle
+.gradle
+# output folder for application local development
+dist
+# node modules. They will be installed while building an image
+node_modules
+# don't need test files because we don't run them in CI pipeline
+test
+# ignore files that don't participate into building or running application
+# file with env variable
+.env.example
+# prodject description
+README.md
+# file contians a list of recources out of git control
+.gitignore
+# the following 2 files are for formatting the JS code
+.prettierrc
+.eslintrc.js
+# don't need to pass Docker-related files inside a docker context. So ingore them.
+Dockerfile*
+.dockerignore

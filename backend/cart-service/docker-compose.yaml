@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    container_name: cartservice-postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      "POSTGRES_DB": "cartservice"
+      "POSTGRES_USER": "postgres"
+      "POSTGRES_PASSWORD": "postgres"
+
+  cart-api-webpack:
+    container_name: city-api-webpack
+    build:
+      dockerfile: ./Dockerfile
+      context: ./lambda
+    image: cart-api-webpack:0.0.1
+    env_file:
+      - ./lambda/.env.example # use own .env file. This one was provided as an example of the mandatory env variables during container running
+    environment:
+      "PG_URL": "db" # points to the DB service name within docker compose network
+    ports:
+      - "4001:4000"
+    depends_on:
+      - db
