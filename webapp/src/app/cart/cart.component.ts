@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { CheckoutService } from './checkout.service';
-import { ProductCheckout } from '../products/product.interface';
+import { Product, ProductCheckout } from '../products/product.interface';
 import { Observable } from 'rxjs';
 import { CartService } from './cart.service';
 import { map, shareReplay } from 'rxjs/operators';
+import { NotificationService } from '../core/notification.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cart',
@@ -29,8 +31,11 @@ export class CartComponent implements OnInit {
   constructor(
     private readonly fb: UntypedFormBuilder,
     private readonly checkoutService: CheckoutService,
-    private readonly cartService: CartService
-  ) {}
+    private readonly cartService: CartService,
+    private readonly notificationService: NotificationService,
+    private readonly router: Router,
+  ) {
+  }
 
   get fullName(): string {
     const { firstName, lastName } = this.shippingInfo.value;
@@ -57,7 +62,7 @@ export class CartComponent implements OnInit {
       shareReplay({
         refCount: true,
         bufferSize: 1,
-      })
+      }),
     );
 
     this.totalPrice$ = this.products$.pipe(
@@ -68,18 +73,38 @@ export class CartComponent implements OnInit {
       shareReplay({
         refCount: true,
         bufferSize: 1,
-      })
+      }),
     );
 
     this.totalInCart$ = this.cartService.totalInCart$;
     this.cartEmpty$ = this.totalInCart$.pipe(map((count) => count > 0));
   }
 
-  add(id: string): void {
-    this.cartService.addItem(id);
+  add(product: Product): void {
+    this.cartService.addItem(product);
   }
 
-  remove(id: string): void {
-    this.cartService.removeItem(id);
+  remove(product: Product): void {
+    this.cartService.removeItem(product);
+  }
+
+  checkout() {
+    this.cartService.checkout({
+      delivery: {
+        type: `${this.fullName} ${this.address}`,
+        comments: this.comment,
+      },
+    }).subscribe(
+      () => {
+        this.notificationService.showSuccess('Order has been placed.');
+        this.router.navigate(['/'], { replaceUrl: true })
+          .then(
+            () => this.cartService.init(),
+          );
+      },
+      (error) => {
+        this.notificationService.showError('Order has not been placed. Try again');
+      },
+    );
   }
 }

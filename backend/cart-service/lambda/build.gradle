@@ -1,0 +1,39 @@
+plugins {
+    id 'base'
+    id"com.github.node-gradle.node" version "7.0.2"
+}
+
+var outputDir = "$rootDir/dist"
+
+
+clean {
+    delete "${project.projectDir}/dist"
+    delete "${project.projectDir}/build"
+    delete outputDir
+}
+
+node {
+    // Version of node to use.
+    version = '20.14.0'
+    // If true, it will download node using above parameters.
+    // If false, it will try to use globally installed node.
+    download = true
+}
+
+
+tasks.register('buildNestjsApp', NpxTask) {
+    dependsOn clean, npmInstall
+    command = 'npm'
+    args = ['run','build-lambda']
+    inputs.files(
+            'package.json',
+            'package-lock.json',
+            'nest-cli.json',
+            'webpack.config.js',
+            'tsconfig.json',
+            'tsconfig.build.json')
+    inputs.dir('src')
+    inputs.dir(fileTree("node_modules").exclude(".cache"))
+
+    outputs.dir(outputDir)
+}

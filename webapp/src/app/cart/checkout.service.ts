@@ -15,14 +15,14 @@ export class CheckoutService {
   ) {}
 
   getProductsForCheckout(): Observable<ProductCheckout[]> {
-    return this.cartService.cart$.pipe(
+    return this.cartService.getCurrentCart().pipe(
       switchMap((cart) =>
-        this.productsService.getProductsForCheckout(Object.keys(cart)).pipe(
+        this.productsService.getProductsForCheckout(cart.items.map(i => i.product.id)).pipe(
           map((products) =>
             products.map((product) => ({
               ...product,
-              orderedCount: cart[product.id],
-              totalPrice: +(cart[product.id] * product.price).toFixed(2),
+              orderedCount: cart.items.find(item => item.product.id === product.id)?.count || 0,
+              totalPrice: +((cart.items.find(item => item.product.id === product.id)?.count || 0) * product.price).toFixed(2),
             }))
           )
         )

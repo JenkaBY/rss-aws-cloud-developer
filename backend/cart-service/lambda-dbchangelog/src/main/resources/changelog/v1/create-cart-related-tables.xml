@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="JenkaBY" id="create-table_carts">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="carts"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="carts">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="JenkaBY" id="add-status-constraint-on-table_carts-status">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="carts"/>
+                <not>
+                    <sqlCheck expectedResult="1">
+                        SELECT COUNT(1) FROM information_schema.constraint_column_usage WHERE constraint_name =
+                        'cart_status_values_check'
+                    </sqlCheck>
+                </not>
+            </and>
+        </preConditions>
+        <sql>ALTER TABLE carts
+            ADD CONSTRAINT cart_status_values_check CHECK (status in ('OPEN', 'ORDERED'))</sql>
+    </changeSet>
+
+    <changeSet author="JenkaBY" id="create-table_cart-items">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cart_items"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="cart_items">
+            <column name="cart_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" foreignKeyName="fk_cart_items_carts"
+                             references="carts(id)" primaryKeyName="pr_cart_items"/>
+            </column>
+            <column name="product_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pr_cart_items"/>
+            </column>
+            <column name="count" type="int" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

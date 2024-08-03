@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { AuthorizationService } from './core/auth/authorization.service';
+import { CartService } from './cart/cart.service';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -6,4 +9,15 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private readonly authService: AuthorizationService,
+              private readonly cartService: CartService) {
+  }
+
+  ngOnInit(): void {
+    this.authService.authorize().pipe(
+      map(_ => this.cartService.init())
+    ).subscribe();
+
+  }
+}

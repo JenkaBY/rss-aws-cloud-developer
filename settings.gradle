@@ -16,6 +16,10 @@ include('webapp',
         ':backend:product-service:lambda',
         ':backend:authorization-service',
         ':backend:authorization-service:deploy',
-        ':backend:authorization-service:lambda'
+        ':backend:authorization-service:lambda',
+        ':backend:cart-service',
+        ':backend:cart-service:deploy',
+        ':backend:cart-service:lambda',
+        ':backend:cart-service:lambda-dbchangelog',
 )
 
