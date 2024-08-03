@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import { Callback, Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
 
-const port = process.env.PORT || 4000;
 let server: Handler;
 
 async function bootstrap() {
@@ -14,9 +13,7 @@ async function bootstrap() {
         origin: (req, callback) => callback(null, true),
     });
     app.use(helmet());
-
-    await app.listen(port);
-
+    await app.init();
     const expressApp = app.getHttpAdapter().getInstance();
     return serverlessExpress({app: expressApp});
 }
