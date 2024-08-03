@@ -15,13 +15,8 @@ async function bootstrap() {
     app.use(helmet());
 
     await app.listen(port);
-    // TODO delete because of nest solution usage
-    // AppDataSource.initialize()
-    //   .then(async () => {
-    //       console.log("DB initialized")
-    //   })
-    //   .catch((error) => console.log("Error: ", error))
 }
+
 bootstrap().then(() => {
     console.log('App is running on %s port', port);
 });

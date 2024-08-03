@@ -9,13 +9,12 @@ import { Cart, CartItem } from '../entities';
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, CartDTO> = {};
 
   constructor(@InjectRepository(Cart) private readonly cartRepo: Repository<Cart>,
   ) {
   }
 
-  public async _findByUserId(userId: string): Promise<CartDTO> {
+  public async findByUserId(userId: string): Promise<CartDTO> {
     return this.cartRepo.findOneBy({
       user_id: userId,
       status: CartStatus.OPEN,
@@ -25,11 +24,7 @@ export class CartService {
     });
   }
 
-  findByUserId(userId: string): CartDTO {
-    return this.userCarts[userId];
-  }
-
-  _createByUserId(userId: string): Promise<CartDTO> {
+  public async createByUserId(userId: string): Promise<CartDTO> {
     const id = v4();
     const userCart: Cart = {
       id: id,
@@ -41,59 +36,18 @@ export class CartService {
       .then(entity => CartDTO.fromEntity(entity));
   }
 
-  createByUserId(userId: string) {
-    const id = v4();
-    const now = Date.now();
-    const userCart: CartDTO = CartDTO.from({
-      id,
-      user_id: userId,
-      // created_at: now,
-      // updated_at: now,
-      status: CartStatus.OPEN,
-      items: [],
-    });
-
-    this.userCarts[userId] = userCart;
-
-    return userCart;
-  }
-
-  findOrCreateByUserId(userId: string): CartDTO {
-    const userCart = this.findByUserId(userId);
-
-    if (userCart) {
-      return userCart;
-    }
-
-    return this.createByUserId(userId);
-  }
-
-  async _findOrCreateByUserId(userId: string): Promise<CartDTO> {
-    const userCart = await this._findByUserId(userId);
+  public async findOrCreateByUserId(userId: string): Promise<CartDTO> {
+    const userCart = await this.findByUserId(userId);
 
     if (userCart) {
       return userCart;
     }
     console.log('Not found a cart for user_id', userId);
-    return this._createByUserId(userId);
+    return this.createByUserId(userId);
   }
 
-  updateByUserId(userId: string, { items }: CartDTO): CartDTO | any {
-    const { id, ...rest } = this.findOrCreateByUserId(userId);
-
-    const updatedCart = {
-      id,
-      ...rest,
-      items: [...items],
-    };
-
-    this.userCarts[userId] = { ...updatedCart } as CartDTO;
-
-    return { ...updatedCart };
-  }
-
-  async _updateByUserId(userId: string, { items }: CartDTO): Promise<CartDTO> {
-    const cartDTO = this._findOrCreateByUserId(userId);
+  public async updateByUserId(userId: string, { items }: CartDTO): Promise<CartDTO> {
+    const cartDTO = this.findOrCreateByUserId(userId);
 
     const updatedCart = cartDTO.then(cart => {
       const updatedItems = items.map(item => CartItem.from(item, cart.id));
@@ -107,11 +61,7 @@ export class CartService {
     });
   }
 
-  removeByUserId(userId: string): void {
-    this.userCarts[userId] = null;
-  }
-
-  async _removeByUserId(userId: string): Promise<void> {
+  public async removeByUserId(userId: string): Promise<void> {
     await this.cartRepo.findOneBy({
       user_id: userId,
       status: CartStatus.OPEN,

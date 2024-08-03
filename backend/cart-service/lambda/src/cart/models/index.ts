@@ -1,5 +1,4 @@
-import { Cart } from '../entities/cart.entity';
-import { CartItem } from '../entities/cart-item.entity';
+import { Cart, CartItem } from '../entities';
 
 export enum CartStatus {
   OPEN = 'OPEN',

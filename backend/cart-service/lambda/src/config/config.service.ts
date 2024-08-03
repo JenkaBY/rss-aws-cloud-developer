@@ -49,13 +49,14 @@ class ConfigService {
       // migrations: ['src/migration/*.ts'],
       synchronize: false,
       manualInitialization: false,
-      logging: true,
+      logging: false,
       autoLoadEntities: true,
       ssl: this.getSslConfig(),
     };
   }
 
   private getSslConfig(): boolean | TlsOptions {
+    // TODO Enable ssl for PROD
     // return this.isProduction() ? this.sslConfig(): false;
     return false;
   }

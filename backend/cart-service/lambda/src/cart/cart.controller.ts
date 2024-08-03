@@ -20,7 +20,7 @@ export class CartController {
   @Get()
   async findUserCart(@Req() req: AppRequest) {
     console.log('request', req.body, req.headers);
-    const cart = await this.cartService._findOrCreateByUserId(getUserIdFromRequest(req));
+    const cart = await this.cartService.findOrCreateByUserId(getUserIdFromRequest(req));
 
     return {
       statusCode: HttpStatus.OK,
@@ -36,7 +36,7 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Put()
   async updateUserCart(@Req() req: AppRequest, @Body() body) { // TODO: validate body payload...
-    const cart = await this.cartService._updateByUserId(getUserIdFromRequest(req), body);
+    const cart = await this.cartService.updateByUserId(getUserIdFromRequest(req), body);
 
     return {
       statusCode: HttpStatus.OK,
@@ -52,7 +52,7 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Delete()
   async clearUserCart(@Req() req: AppRequest) {
-    await this.cartService._removeByUserId(getUserIdFromRequest(req));
+    await this.cartService.removeByUserId(getUserIdFromRequest(req));
 
     return {
       statusCode: HttpStatus.OK,
@@ -66,7 +66,7 @@ export class CartController {
   async checkout(@Req() req: AppRequest, @Body() body: OrderInputDto) {
     console.log("Checkout request", body)
     const userId = getUserIdFromRequest(req);
-    const cart = await this.cartService._findByUserId(userId);
+    const cart = await this.cartService.findByUserId(userId);
 
     if (!(cart && cart.items.length)) {
       const statusCode = HttpStatus.BAD_REQUEST;
