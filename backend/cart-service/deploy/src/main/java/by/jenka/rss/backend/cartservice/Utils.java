@@ -2,6 +2,8 @@ package by.jenka.rss.backend.cartservice;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import software.amazon.awscdk.services.apigateway.*;
+import software.amazon.awscdk.services.iam.Effect;
+import software.amazon.awscdk.services.iam.PolicyStatement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,4 +60,19 @@ public class Utils {
         item.addMethod("OPTIONS", methodIntegration, methodOptions);
     }
 
+
+    public static PolicyStatement ec2RolesStatement() {
+        return PolicyStatement.Builder.create()
+                .sid("ec2ResourcesManagement")
+                .effect(Effect.ALLOW)
+                .resources(List.of("*"))
+                .actions(List.of(
+                        "ec2:DescribeNetworkInterfaces",
+                        "ec2:CreateNetworkInterface",
+                        "ec2:DeleteNetworkInterface",
+                        "ec2:DescribeInstances",
+                        "ec2:AttachNetworkInterface"
+                ))
+                .build();
+    }
 }

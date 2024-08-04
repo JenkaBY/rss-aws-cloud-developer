@@ -30,6 +30,8 @@ public class CartServiceStack extends Stack {
     private TriggerFunction cartServiceDbChangelogHandler;
     private DataSource dataSource;
     private DatabaseInstance postgresInstance;
+    private ISecurityGroup securityGroupPgWithInternalAccess;
+    private IVpc defaultVpc;
 
     public CartServiceStack(@Nullable Construct scope, @Nullable String id, @Nullable StackProps props) {
         super(scope, id, props);
@@ -57,8 +59,20 @@ public class CartServiceStack extends Stack {
                 .memorySize(256)
                 .timeout(TWENTY_SECONDS)
                 .environment(lambdaEnvMap)
+                .allowPublicSubnet(true)
+                .securityGroups(List.of(securityGroupPgWithInternalAccess))
+                .vpc(defaultVpc)
+                .vpcSubnets(
+                        SubnetSelection.builder()
+                                .subnetFilters(List.of(
+                                        SubnetFilter.availabilityZones(List.of("eu-north-1b", "eu-north-1a", "eu-north-1c")))
+                                )
+                                .build()
+                )
 //                .layers(List.of(nodeModules))
                 .build();
+
+        cartApiHandler.addToRolePolicy(Utils.ec2RolesStatement());
         return this;
     }
 
@@ -74,8 +88,18 @@ public class CartServiceStack extends Stack {
                 .memorySize(256)
                 .timeout(TWENTY_SECONDS)
                 .environment(lambdaEnvMap)
+                .allowPublicSubnet(true)
+                .securityGroups(List.of(securityGroupPgWithInternalAccess))
+                .vpc(defaultVpc)
+                .vpcSubnets(
+                        SubnetSelection.builder()
+                                .subnetFilters(List.of(
+                                        SubnetFilter.availabilityZones(List.of("eu-north-1b", "eu-north-1a", "eu-north-1c")))
+                                )
+                                .build())
                 .build();
         cartServiceDbChangelogHandler.executeAfter(postgresInstance);
+        cartServiceDbChangelogHandler.addToRolePolicy(Utils.ec2RolesStatement());
         postgresInstance.grantConnect(cartServiceDbChangelogHandler, dataSource.getUser());
         return this;
     }
@@ -122,18 +146,6 @@ public class CartServiceStack extends Stack {
 //                FIXME. Avoid passing a raw password and user.
         var credentials = Credentials.fromPassword(dataSource.getUser(), SecretValue.unsafePlainText(dataSource.getRawPassword()));
 
-        var defaultVpc = Vpc.fromLookup(this, "rss-rds-VPC", VpcLookupOptions.builder()
-                .isDefault(true)
-                .build());
-        var securityGroupPgWithPublicAccess = SecurityGroup.Builder.create(this, "rss-rds-sec-group")
-                .vpc(defaultVpc)
-                .allowAllOutbound(true)
-                .securityGroupName("rss-rds-sec-group")
-                .build();
-
-        securityGroupPgWithPublicAccess.addIngressRule(Peer.anyIpv4(), Port.POSTGRES, "PostgresOnly");
-        securityGroupPgWithPublicAccess.getConnections().allowFromAnyIpv4(Port.POSTGRES);
-
         var postgres15 = DatabaseInstanceEngine.postgres(
                 PostgresInstanceEngineProps.builder()
                         .version(PostgresEngineVersion.VER_15)
@@ -164,11 +176,11 @@ public class CartServiceStack extends Stack {
                 .caCertificate(CaCertificate.RDS_CA_RSA2048_G1)
 //                access
                 .vpc(defaultVpc)
-                .securityGroups(List.of(securityGroupPgWithPublicAccess))
+                .securityGroups(List.of(securityGroupPgWithInternalAccess))
                 .vpcSubnets(SubnetSelection.builder()
                         .subnetType(SubnetType.PUBLIC)
                         .build())
-                .publiclyAccessible(true)
+                .publiclyAccessible(false)
                 .build();
         lambdaEnvMap.put("PG_URL", postgresInstance.getDbInstanceEndpointAddress());
         System.out.println("Created DB");
@@ -195,6 +207,21 @@ public class CartServiceStack extends Stack {
                 .exportName("CartServicePostgresEndpoint")
                 .value(postgresInstance.getDbInstanceEndpointAddress())
                 .build();
+        return this;
+    }
+
+    public CartServiceStack initVpcAndSecurityGroups() {
+        defaultVpc = Vpc.fromLookup(this, "rss-rds-VPC", VpcLookupOptions.builder()
+                .isDefault(true)
+                .build());
+        securityGroupPgWithInternalAccess = SecurityGroup.Builder.create(this, "rss-rds-sec-group")
+                .vpc(defaultVpc)
+                .allowAllOutbound(true)
+                .securityGroupName("rss-rds-sec-group")
+                .build();
+
+        securityGroupPgWithInternalAccess.addIngressRule(Peer.anyIpv4(), Port.POSTGRES, "PostgresOnly via cdk");
+        securityGroupPgWithInternalAccess.getConnections().allowInternally(Port.POSTGRES);
         return this;
     }
 
