@@ -21,5 +21,9 @@ include('webapp',
         ':backend:cart-service:deploy',
         ':backend:cart-service:lambda',
         ':backend:cart-service:lambda-dbchangelog',
+        ':backend:bff-service',
+        ':backend:bff-service:deploy',
+        ':backend:bff-service:lambda',
+        ':backend:bff-service:app',
 )
 
