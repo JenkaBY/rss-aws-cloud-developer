@@ -1,0 +1,15 @@
+# EB uses nginx with mapped 80 -> 5000 port
+server:
+  port: 5000
+spring:
+  application:
+    name: bff-service
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation: TRACE
+downstream:
+  cart-service:
+    base-url: ${CART_SERVICE_URL:http://jenkaby-cart-api-prod.eu-north-1.elasticbeanstalk.com/}
+#    base-url: ${CART_SERVICE_URL:http://localhost:4001/}
+  product-service:
+    base-url: ${PRODUCT_SERVICE_URL:https://wgti49plnh.execute-api.eu-north-1.amazonaws.com/prod/}
