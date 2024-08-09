@@ -7,8 +7,8 @@ export const environment: Config = {
     order: 'https://.execute-api.eu-west-1.amazonaws.com/dev',
     import: 'https://zz96tej570.execute-api.eu-north-1.amazonaws.com/prod',
     bff: 'https://.execute-api.eu-west-1.amazonaws.com/dev',
-    cart: 'https://fzpbwjly4d.execute-api.eu-north-1.amazonaws.com/prod',
-    auth: 'https://fzpbwjly4d.execute-api.eu-north-1.amazonaws.com/prod',
+    cart: 'http://jenkaby-cart-api-prod.eu-north-1.elasticbeanstalk.com',
+    auth: 'http://jenkaby-cart-api-prod.eu-north-1.elasticbeanstalk.com',
   },
   apiEndpointsEnabled: {
     product: true,
@@ -18,6 +18,6 @@ export const environment: Config = {
     cart: true,
     auth: true,
   },
-  accessibleUrl: "https://d1hxiyo0kk0n80.cloudfront.net/",
-  taskIdentification: 'Task 8. Cart Service API. Postgres instance has been deployed via Java CDK.'
+  accessibleUrl: "http://d1hxiyo0kk0n80.cloudfront.net/",
+  taskIdentification: 'Task 9. Docker and AWS Elastic Beanstalk'
 };
