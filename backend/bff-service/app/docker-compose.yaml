@@ -1,0 +1,11 @@
+services:
+  bff:
+    container_name: bff-service-container
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: bff-service:latest
+    env_file:
+      - .env.example
+    ports:
+      - "5000:8080"
