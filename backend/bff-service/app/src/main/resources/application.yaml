@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: bff-service
+  cache:
+    cache-names: products
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=120s
 logging:
   level:
     org.springframework.web.servlet.mvc.method.annotation: TRACE

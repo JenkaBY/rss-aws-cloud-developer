@@ -1,6 +1,6 @@
 package by.jenka.rss.bffservice.controller;
 
-import by.jenka.rss.bffservice.service.downstream.DownstreamServiceProvider;
+import by.jenka.rss.bffservice.service.ProductService;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 public class ProductRestController extends DelegateRestController {
 
 
-    public ProductRestController(DownstreamServiceProvider productProvider) {
-        super(productProvider);
+    public ProductRestController(ProductService productService) {
+        super(productService);
     }
 
     @RequestMapping(method = {

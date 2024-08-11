@@ -1,6 +1,6 @@
 package by.jenka.rss.bffservice.controller;
 
-import by.jenka.rss.bffservice.service.downstream.DownstreamServiceProvider;
+import by.jenka.rss.bffservice.service.CartService;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/cart/**", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class CartRestController extends DelegateRestController {
 
-    public CartRestController(DownstreamServiceProvider cartProvider) {
-        super(cartProvider);
+    public CartRestController(CartService cartService) {
+        super(cartService);
     }
 
     @RequestMapping(method = {
