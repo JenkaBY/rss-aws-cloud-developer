@@ -1,0 +1,6 @@
+build
+!build/libs/bff-service.jar
+src/test
+.gitignore
+.env
+
